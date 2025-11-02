@@ -59,7 +59,7 @@ function Universal() {
       <Card sx={{ mt: 2 }}>
         <CardContent>
           <Typography variant="h5" gutterBottom>
-            Left Recursion Elimination Tool
+            Left Recursion Elimination Tool (LRG → RRG)
           </Typography>
           <Typography variant="body2" color="text.secondary" gutterBottom sx={{ mb: 3 }}>
             Enter any grammar with left recursion (direct or indirect) to eliminate it

@@ -19,7 +19,7 @@ public class CompilerService {
 
     public TheoryResponse getTheory() {
         String content = """
-            <h2>Left Recursion Elimination</h2>
+            <h2>Left Recursion Elimination (Transforming LRG → RRG)</h2>
             
             <h3>What is Left Recursion?</h3>
             <p>Left recursion occurs when a non-terminal A has a production of the form <strong>A → Aα</strong>, 
@@ -105,7 +105,7 @@ When ε is a beta production, write A' instead of εA'.
             </ul>
             """;
 
-        return new TheoryResponse("Left Recursion Elimination", content);
+        return new TheoryResponse("Left Recursion Elimination (Transforming LRG → RRG)", content);
     }
 
     public List<ProblemResponse> getProblems() {
