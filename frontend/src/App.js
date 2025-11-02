@@ -1,69 +1,44 @@
 // src/App.js
-import React, { useState } from 'react';
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
-import { AppBar, Toolbar, Typography, Tabs, Tab, Box, Container, CssBaseline } from '@mui/material';
-import Theory from './components/Theory';
-import Problems from './components/Problems';
-import Universal from './components/Universal';
+import { CssBaseline } from '@mui/material';
+import HomePage from './components/HomePage';
+import LexicalAnalysis from './components/LexicalAnalysis';
+import SyntaxAnalysis from './components/SyntaxAnalysis';
+import SemanticAnalysis from './components/SemanticAnalysis';
+import IntermediateCode from './components/IntermediateCode';
 
 const theme = createTheme({
   palette: {
     primary: {
-      main: '#3f51b5',
+      main: '#667eea',
     },
     secondary: {
-      main: '#f50057',
+      main: '#f5576c',
     },
+  },
+  typography: {
+    fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
+  },
+  shape: {
+    borderRadius: 12,
   },
 });
 
-function TabPanel({ children, value, index }) {
-  return (
-    <div role="tabpanel" hidden={value !== index}>
-      {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
-    </div>
-  );
-}
-
 function App() {
-  const [selectedTab, setSelectedTab] = useState(0);
-
-  const handleTabChange = (event, newValue) => {
-    setSelectedTab(newValue);
-  };
-
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Box sx={{ flexGrow: 1 }}>
-        <AppBar position="static">
-          <Toolbar>
-            <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-              Compiler Design Learning App
-            </Typography>
-          </Toolbar>
-        </AppBar>
-
-        <Container maxWidth="lg" sx={{ mt: 3 }}>
-          <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-            <Tabs value={selectedTab} onChange={handleTabChange}>
-              <Tab label="Theory" />
-              <Tab label="Problems" />
-              <Tab label="Practice Tool" />
-            </Tabs>
-          </Box>
-
-          <TabPanel value={selectedTab} index={0}>
-            <Theory />
-          </TabPanel>
-          <TabPanel value={selectedTab} index={1}>
-            <Problems />
-          </TabPanel>
-          <TabPanel value={selectedTab} index={2}>
-            <Universal />
-          </TabPanel>
-        </Container>
-      </Box>
+      <Router>
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/lexical" element={<LexicalAnalysis />} />
+          <Route path="/syntax" element={<SyntaxAnalysis />} />
+          <Route path="/semantic" element={<SemanticAnalysis />} />
+          <Route path="/intermediate" element={<IntermediateCode />} />
+        </Routes>
+      </Router>
     </ThemeProvider>
   );
 }
