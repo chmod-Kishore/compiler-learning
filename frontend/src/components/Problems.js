@@ -125,8 +125,8 @@ function Problems() {
             multiline
             rows={6}
             variant="outlined"
-            label="Your Answer (RRG)"
-            placeholder="Enter the reduced regular grammar..."
+            label="Your Answer"
+            placeholder="Enter the grammar without left recursion..."
             value={userAnswer}
             onChange={(e) => setUserAnswer(e.target.value)}
             sx={{ mb: 2 }}

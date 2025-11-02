@@ -4,47 +4,73 @@ package com.compiler.learning.service;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @Service
 public class GrammarConversionService {
 
     /**
-     * Converts Left Regular Grammar (LRG) to Reduced Regular Grammar (RRG)
-     * LRG: Productions of form A -> Ba or A -> a
-     * RRG: Productions of form A -> aB or A -> a
+     * Eliminates Left Recursion from a Context-Free Grammar (CFG)
+     * Handles both Direct and Indirect Left Recursion
      */
     public ConversionResult convertLRGtoRRG(String inputGrammar) {
         List<String> steps = new ArrayList<>();
         Map<String, List<String>> productions = parseGrammar(inputGrammar);
 
-        steps.add("Step 1: Parse the input Left Regular Grammar (LRG)");
-        steps.add("Identified productions: " + formatProductions(productions));
+        steps.add("Step 1: Parse the input grammar");
+        steps.add("Original Grammar: " + formatGrammar(productions));
 
-        // Step 2: Create reverse productions
-        steps.add("Step 2: Reverse the production rules");
-        Map<String, List<String>> reversedProductions = reverseProductions(productions);
-        steps.add("After reversal: " + formatProductions(reversedProductions));
-
-        // Step 3: Create new start symbol if needed
-        String originalStart = findStartSymbol(productions);
-        String newStart = originalStart;
-
-        if (hasProductionsToStart(reversedProductions, originalStart)) {
-            newStart = "S'";
-            reversedProductions.put(newStart, Arrays.asList(originalStart));
-            steps.add("Step 3: Original start symbol '" + originalStart +
-                    "' appears on RHS, creating new start symbol '" + newStart + "'");
-        } else {
-            steps.add("Step 3: No need for new start symbol");
+        // Get ordered list of non-terminals
+        List<String> nonTerminals = new ArrayList<>(productions.keySet());
+        
+        steps.add("Step 2: Eliminate indirect left recursion by substitution");
+        
+        // Eliminate indirect left recursion
+        for (int i = 0; i < nonTerminals.size(); i++) {
+            String Ai = nonTerminals.get(i);
+            
+            for (int j = 0; j < i; j++) {
+                String Aj = nonTerminals.get(j);
+                
+                List<String> newProductions = new ArrayList<>();
+                boolean substituted = false;
+                
+                for (String production : productions.get(Ai)) {
+                    if (production.length() > 0 && production.charAt(0) == Aj.charAt(0) && 
+                        (production.length() == 1 || !Character.isLetter(production.charAt(1)) || 
+                         Character.isLowerCase(production.charAt(1)))) {
+                        
+                        // This production starts with Aj
+                        substituted = true;
+                        String alpha = production.substring(Aj.length());
+                        
+                        // Replace Ai -> Aj α with Ai -> δ1 α | δ2 α | ... for all Aj -> δ
+                        for (String ajProduction : productions.get(Aj)) {
+                            newProductions.add(ajProduction + alpha);
+                        }
+                        
+                        steps.add("   Substituting " + Aj + " in " + Ai + " -> " + production);
+                    } else {
+                        newProductions.add(production);
+                    }
+                }
+                
+                if (substituted) {
+                    productions.put(Ai, newProductions);
+                    steps.add("   After substitution: " + Ai + " -> " + String.join(" | ", newProductions));
+                }
+            }
+            
+            // Eliminate direct left recursion for Ai
+            if (hasDirectLeftRecursion(Ai, productions.get(Ai))) {
+                steps.add("Step 3: Eliminate direct left recursion for " + Ai);
+                eliminateDirectLeftRecursion(Ai, productions, steps);
+            }
         }
 
-        // Step 4: Format as Reduced Regular Grammar
-        steps.add("Step 4: Format as Reduced Regular Grammar (RRG)");
-        String rrg = formatAsRRG(reversedProductions, newStart);
+        steps.add("Step 4: Final grammar without left recursion");
+        String result = formatGrammar(productions);
 
-        return new ConversionResult(rrg, steps);
+        return new ConversionResult(result, steps);
     }
 
     private Map<String, List<String>> parseGrammar(String grammar) {
@@ -63,7 +89,13 @@ public class GrammarConversionService {
 
             List<String> prods = new ArrayList<>();
             for (String prod : productionList) {
-                prods.add(prod.trim());
+                String p = prod.trim();
+                // Normalize epsilon representations
+                if (p.equals("ε") || p.equals("epsilon") || p.equals("#")) {
+                    prods.add("ε");
+                } else {
+                    prods.add(p);
+                }
             }
 
             productions.put(nonTerminal, prods);
@@ -72,80 +104,83 @@ public class GrammarConversionService {
         return productions;
     }
 
-    private Map<String, List<String>> reverseProductions(Map<String, List<String>> productions) {
-        Map<String, List<String>> reversed = new LinkedHashMap<>();
-
-        for (Map.Entry<String, List<String>> entry : productions.entrySet()) {
-            String lhs = entry.getKey();
-
-            for (String production : entry.getValue()) {
-                String reversedProd = new StringBuilder(production).reverse().toString();
-
-                // Extract non-terminal if exists (should be first char after reversal)
-                if (reversedProd.length() > 1 && Character.isUpperCase(reversedProd.charAt(0))) {
-                    String newLhs = String.valueOf(reversedProd.charAt(0));
-                    String terminal = reversedProd.substring(1);
-
-                    reversed.computeIfAbsent(newLhs, k -> new ArrayList<>())
-                            .add(terminal + lhs);
-                } else {
-                    // Terminal only production
-                    reversed.computeIfAbsent(lhs, k -> new ArrayList<>())
-                            .add(reversedProd);
-                }
-            }
-        }
-
-        return reversed;
-    }
-
-    private String findStartSymbol(Map<String, List<String>> productions) {
-        return productions.keySet().iterator().next();
-    }
-
-    private boolean hasProductionsToStart(Map<String, List<String>> productions, String startSymbol) {
-        for (Map.Entry<String, List<String>> entry : productions.entrySet()) {
-            if (entry.getKey().equals(startSymbol)) continue;
-
-            for (String prod : entry.getValue()) {
-                if (prod.contains(startSymbol)) {
-                    return true;
-                }
+    private boolean hasDirectLeftRecursion(String nonTerminal, List<String> productionList) {
+        for (String production : productionList) {
+            if (production.length() > 0 && production.startsWith(nonTerminal)) {
+                return true;
             }
         }
         return false;
     }
 
-    private String formatAsRRG(Map<String, List<String>> productions, String startSymbol) {
-        StringBuilder sb = new StringBuilder();
+    private void eliminateDirectLeftRecursion(String A, Map<String, List<String>> productions, List<String> steps) {
+        List<String> alphaProductions = new ArrayList<>(); // A -> Aα (left recursive)
+        List<String> betaProductions = new ArrayList<>();  // A -> β (non-left recursive)
 
-        // Put start symbol first
-        if (productions.containsKey(startSymbol)) {
-            sb.append(startSymbol).append(" -> ");
-            sb.append(String.join(" | ", productions.get(startSymbol)));
-            sb.append("\n");
+        for (String production : productions.get(A)) {
+            if (production.startsWith(A)) {
+                // Left recursive production A -> Aα
+                String alpha = production.substring(A.length());
+                if (!alpha.isEmpty()) {
+                    alphaProductions.add(alpha);
+                }
+            } else {
+                // Non-left recursive production A -> β
+                betaProductions.add(production);
+            }
         }
 
-        // Add other productions
-        for (Map.Entry<String, List<String>> entry : productions.entrySet()) {
-            if (entry.getKey().equals(startSymbol)) continue;
-
-            sb.append(entry.getKey()).append(" -> ");
-            sb.append(String.join(" | ", entry.getValue()));
-            sb.append("\n");
+        if (alphaProductions.isEmpty()) {
+            return; // No direct left recursion
         }
 
-        return sb.toString().trim();
+        // Create new non-terminal A'
+        String APrime = A + "'";
+        int counter = 1;
+        while (productions.containsKey(APrime)) {
+            APrime = A + "'" + counter++;
+        }
+
+        steps.add("   Creating new non-terminal: " + APrime);
+
+        // New productions for A: A -> β1A' | β2A' | ...
+        List<String> newAProductions = new ArrayList<>();
+        for (String beta : betaProductions) {
+            // If beta is epsilon, just add A' (not εA')
+            if (beta.equals("ε")) {
+                newAProductions.add(APrime);
+            } else {
+                newAProductions.add(beta + APrime);
+            }
+        }
+        
+        // If there are no beta productions, add epsilon
+        if (betaProductions.isEmpty()) {
+            newAProductions.add(APrime);
+        }
+
+        // New productions for A': A' -> α1A' | α2A' | ... | ε
+        List<String> newAPrimeProductions = new ArrayList<>();
+        for (String alpha : alphaProductions) {
+            newAPrimeProductions.add(alpha + APrime);
+        }
+        newAPrimeProductions.add("ε");
+
+        productions.put(A, newAProductions);
+        productions.put(APrime, newAPrimeProductions);
+
+        steps.add("   " + A + " -> " + String.join(" | ", newAProductions));
+        steps.add("   " + APrime + " -> " + String.join(" | ", newAPrimeProductions));
     }
 
-    private String formatProductions(Map<String, List<String>> productions) {
+    private String formatGrammar(Map<String, List<String>> productions) {
         StringBuilder sb = new StringBuilder();
         for (Map.Entry<String, List<String>> entry : productions.entrySet()) {
             sb.append(entry.getKey()).append(" -> ");
             sb.append(String.join(" | ", entry.getValue()));
-            sb.append("; ");
+            sb.append("\n");
         }
-        return sb.toString();
+        return sb.toString().trim();
     }
 
     public static class ConversionResult {

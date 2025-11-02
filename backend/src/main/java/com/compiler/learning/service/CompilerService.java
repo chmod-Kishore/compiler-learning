@@ -19,49 +19,93 @@ public class CompilerService {
 
     public TheoryResponse getTheory() {
         String content = """
-            <h2>LR Grammar to Reduced Regular Grammar Conversion</h2>
+            <h2>Left Recursion Elimination</h2>
             
-            <h3>What is Left Regular Grammar (LRG)?</h3>
-            <p>A Left Regular Grammar is a type of regular grammar where all productions are of the form:</p>
+            <h3>What is Left Recursion?</h3>
+            <p>Left recursion occurs when a non-terminal A has a production of the form <strong>A → Aα</strong>, 
+            where α is any string of grammar symbols. Left recursion can be:</p>
             <ul>
-                <li><strong>A → Ba</strong> (where A and B are non-terminals, a is a terminal)</li>
-                <li><strong>A → a</strong> (where A is a non-terminal, a is a terminal)</li>
+                <li><strong>Direct Left Recursion:</strong> A → Aα | β (A directly references itself as the first symbol)</li>
+                <li><strong>Indirect Left Recursion:</strong> A → Bα, B → Aβ (A references itself through other non-terminals)</li>
             </ul>
             
-            <h3>What is Reduced Regular Grammar (RRG)?</h3>
-            <p>A Reduced Regular Grammar (also called Right Regular Grammar) has productions of the form:</p>
-            <ul>
-                <li><strong>A → aB</strong> (where A and B are non-terminals, a is a terminal)</li>
-                <li><strong>A → a</strong> (where A is a non-terminal, a is a terminal)</li>
-            </ul>
+            <h3>Why Eliminate Left Recursion?</h3>
+            <p>Top-down parsers (like Recursive Descent Parsers and LL parsers) cannot handle left recursion as it leads to 
+            infinite recursion. Converting to right recursion makes the grammar suitable for these parsers.</p>
             
-            <h3>Conversion Algorithm</h3>
-            <p>To convert an LRG to RRG, follow these steps:</p>
+            <h3>Algorithm for Eliminating Direct Left Recursion</h3>
+            <p>For a production with direct left recursion:</p>
+            <pre>A → Aα₁ | Aα₂ | ... | Aαₘ | β₁ | β₂ | ... | βₙ</pre>
+            <p>Where no βᵢ starts with A, replace with:</p>
+            <pre>A → β₁A' | β₂A' | ... | βₙA'
+A' → α₁A' | α₂A' | ... | αₘA' | ε</pre>
+            
+            <h3>Algorithm for Eliminating Indirect Left Recursion</h3>
             <ol>
-                <li><strong>Parse the Grammar:</strong> Identify all production rules</li>
-                <li><strong>Reverse Productions:</strong> For each production A → Ba, create B → aA</li>
-                <li><strong>Handle Start Symbol:</strong> If the original start symbol appears on the right side of any production, create a new start symbol</li>
-                <li><strong>Format Output:</strong> Write the transformed grammar in standard notation</li>
+                <li><strong>Order non-terminals:</strong> Arrange non-terminals as A₁, A₂, ..., Aₙ</li>
+                <li><strong>For each i from 1 to n:</strong>
+                    <ul>
+                        <li>For each j from 1 to i-1:</li>
+                        <li>Replace productions of form Aᵢ → Aⱼγ with Aᵢ → δ₁γ | δ₂γ | ... where Aⱼ → δ₁ | δ₂ | ...</li>
+                    </ul>
+                </li>
+                <li><strong>Eliminate direct left recursion</strong> from Aᵢ productions</li>
             </ol>
             
-            <h3>Example</h3>
+            <h3>Example 1: Direct Left Recursion</h3>
             <pre>
-            Input (LRG):
-            S → Aa | Bb
-            A → Sa | a
-            B → Sb | b
-            
-            Output (RRG):
-            S' → S
-            S → aA | bB
-            A → aS | a
-            B → bS | b
+Input:
+A → Aab | c
+
+Output:
+A → cA'
+A' → abA' | ε
+
+Explanation:
+- α = "ab" (recursive part)
+- β = "c" (non-recursive part)
+- Create A' for the recursive continuation
             </pre>
             
-            <p>The conversion preserves the language recognized by the grammar while changing its structural form.</p>
+            <h3>Example 2: Indirect Left Recursion</h3>
+            <pre>
+Input:
+S → Aa | bB
+A → Ac | Sd | ε
+B → e | f
+
+Step 1: Order non-terminals: S, A, B
+
+Step 2: Process A (i=2, j=1):
+- Replace A → Sd with productions of S
+- A → Aad | bBd (after substitution)
+- A → Ac | Aad | bBd | ε
+
+Step 3: Eliminate direct left recursion from A:
+- α = "c", "ad" (left recursive parts)
+- β = "bBd", "ε" (non-recursive parts)
+- Note: When β is ε, we write just A' (not εA')
+
+Output:
+S → Aa | bB
+A → bBdA' | A'
+A' → cA' | adA' | ε
+B → e | f
+
+Note: ε (epsilon) represents empty string. You can also use # as epsilon.
+When ε is a beta production, write A' instead of εA'.
+            </pre>
+            
+            <h3>Practice Tips</h3>
+            <ul>
+                <li>Always identify which non-terminal has left recursion first</li>
+                <li>For indirect recursion, follow the substitution order carefully</li>
+                <li>Remember: A' productions always end with ε (epsilon)</li>
+                <li>The new non-terminal (A', Z, etc.) represents "zero or more" repetitions</li>
+            </ul>
             """;
 
-        return new TheoryResponse("LR Grammar to Reduced Regular Grammar", content);
+        return new TheoryResponse("Left Recursion Elimination", content);
     }
 
     public List<ProblemResponse> getProblems() {
@@ -97,10 +141,13 @@ public class CompilerService {
 
     private String normalizeAnswer(String answer) {
         // Remove extra whitespace, normalize line breaks, and make case-insensitive comparison
+        // Normalize epsilon representations: #, epsilon, ε all become ε
         return answer.trim()
                 .replaceAll("\\s+", " ")
                 .replaceAll("\\s*->\\s*", "->")
                 .replaceAll("\\s*\\|\\s*", "|")
+                .replaceAll("#", "ε")
+                .replaceAll("epsilon", "ε")
                 .toLowerCase();
     }
 }

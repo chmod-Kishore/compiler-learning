@@ -59,10 +59,10 @@ function Universal() {
       <Card sx={{ mt: 2 }}>
         <CardContent>
           <Typography variant="h5" gutterBottom>
-            Universal Grammar Converter
+            Left Recursion Elimination Tool
           </Typography>
           <Typography variant="body2" color="text.secondary" gutterBottom sx={{ mb: 3 }}>
-            Enter any LR Grammar to convert to Reduced Regular Grammar
+            Enter any grammar with left recursion (direct or indirect) to eliminate it
           </Typography>
 
           <TextField
@@ -70,12 +70,17 @@ function Universal() {
             multiline
             rows={8}
             variant="outlined"
-            label="Input Grammar (LRG)"
-            placeholder={`Enter your LR Grammar here...
-Example:
-S -> aA | bB
-A -> aS | a
-B -> bS | b`}
+            label="Input Grammar"
+            placeholder={`Enter your grammar here...
+Example 1 (Direct):
+A -> Aab | c
+
+Example 2 (Indirect):
+S -> Aa | bB
+A -> Ac | Sd | ε
+B -> e | f
+
+Note: Use ε or # for epsilon (empty string)`}
             value={inputGrammar}
             onChange={(e) => setInputGrammar(e.target.value)}
             sx={{ mb: 3 }}
@@ -89,7 +94,7 @@ B -> bS | b`}
               onClick={handleGenerate}
               disabled={loading}
             >
-              Generate
+              Eliminate Left Recursion
             </Button>
             <Button
               variant="outlined"
@@ -107,7 +112,7 @@ B -> bS | b`}
 
               <Paper elevation={2} sx={{ p: 3, mb: 3, bgcolor: '#f5f5f5' }}>
                 <Typography variant="h6" gutterBottom color="primary">
-                  Transformed Grammar (RRG):
+                  Grammar Without Left Recursion:
                 </Typography>
                 <Typography
                   component="pre"
@@ -126,7 +131,7 @@ B -> bS | b`}
 
               <Paper elevation={2} sx={{ p: 3, bgcolor: '#e8f5e9' }}>
                 <Typography variant="h6" gutterBottom color="primary">
-                  Transformation Steps:
+                  Elimination Steps:
                 </Typography>
                 <List>
                   {steps.map((step, index) => (

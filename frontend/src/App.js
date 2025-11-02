@@ -49,7 +49,7 @@ function App() {
             <Tabs value={selectedTab} onChange={handleTabChange}>
               <Tab label="Theory" />
               <Tab label="Problems" />
-              <Tab label="Universal Mode" />
+              <Tab label="Practice Tool" />
             </Tabs>
           </Box>
 
