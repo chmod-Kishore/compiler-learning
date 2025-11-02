@@ -30,8 +30,8 @@ INSERT INTO problems (question, expected_output, explanation) VALUES
 INSERT INTO problems (question, expected_output, explanation) VALUES
 (
     'S -> Aa | b\nA -> Sc | d',
-    'S -> bS'' | dS''\nS'' -> acS'' | cS'' | ε\nA -> bA'' | dA''\nA'' -> acA'' | cA'' | ε',
-    'Indirect left recursion through S and A:\n1. Order: S, A\n2. Process A: substitute S in A -> Sc\n3. A -> Aac | bc | d\n4. Eliminate direct recursion from A\n5. Then handle S similarly'
+    'S -> Aa | b\nA -> bcA'' | dA''\nA'' -> acA'' | ε',
+    'Indirect left recursion through S and A:\n1. Order: S, A\n2. Process A: substitute S in A -> Sc\n3. A -> (Aa | b)c | d = Aac | bc | d\n4. Eliminate direct recursion from A\n5. A -> bcA'' | dA'', A'' -> acA'' | ε\n6. S remains unchanged'
 );
 
 -- Problem 4: More Complex Indirect Recursion
@@ -62,8 +62,8 @@ INSERT INTO problems (question, expected_output, explanation) VALUES
 INSERT INTO problems (question, expected_output, explanation) VALUES
 (
     'S -> Aa | b\nA -> Bb | c\nB -> Sc | d',
-    'S -> bS'' | cS'' | dS''\nS'' -> aS'' | abS'' | bcS'' | ε\nA -> bA'' | cA'' | dA''\nA'' -> bA'' | abA'' | bcA'' | ε\nB -> bB'' | cB'' | dB''\nB'' -> cB'' | acB'' | abcB'' | ε',
-    'Three-way indirect recursion S→A→B→S:\n1. Order: S, A, B\n2. Process A: substitute S in A -> Aa gives indirect path\n3. Process B: substitute both S and A\n4. Eliminate direct recursion at each step\n5. Results in complex prime productions'
+    'S -> Aa | b\nA -> Bb | c\nB -> cacB'' | bcB'' | dB''\nB'' -> bacB'' | ε',
+    'Three-way indirect recursion S→A→B→S:\n1. Order: S, A, B\n2. Process B: substitute S in B -> Sc\n3. B -> (Aa | b)c | d = Aac | bc | d\n4. Substitute A: B -> (Bb | c)ac | bc | d = Bbac | cac | bc | d\n5. Eliminate direct recursion from B\n6. B -> cacB'' | bcB'' | dB'', B'' -> bacB'' | ε\n7. S and A remain unchanged'
 );
 
 -- Problem 8: Tricky - Hidden Indirect Recursion

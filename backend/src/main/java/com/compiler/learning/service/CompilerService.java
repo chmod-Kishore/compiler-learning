@@ -140,14 +140,46 @@ When ε is a beta production, write A' instead of εA'.
     }
 
     private String normalizeAnswer(String answer) {
-        // Remove extra whitespace, normalize line breaks, and make case-insensitive comparison
-        // Normalize epsilon representations: #, epsilon, ε all become ε
-        return answer.trim()
-                .replaceAll("\\s+", " ")
-                .replaceAll("\\s*->\\s*", "->")
-                .replaceAll("\\s*\\|\\s*", "|")
+        // Step 1: Normalize epsilon representations: #, epsilon, ε all become ε
+        // Also normalize whitespace around arrows and pipes
+        String normalized = answer.trim()
                 .replaceAll("#", "ε")
                 .replaceAll("epsilon", "ε")
                 .toLowerCase();
+
+        // Step 2: Split into individual production lines (separated by newlines)
+        String[] lines = normalized.split("\\r?\\n");
+        
+        // Step 3: Normalize each production line
+        java.util.List<String> normalizedLines = new java.util.ArrayList<>();
+        for (String line : lines) {
+            line = line.trim();
+            if (line.isEmpty()) continue;
+            
+            // Split into non-terminal and productions (e.g., "A -> abA' | ε" becomes ["A", "abA' | ε"])
+            String[] parts = line.split("\\s*->\\s*", 2);
+            if (parts.length != 2) continue;
+            
+            String nonTerminal = parts[0].trim().replaceAll("\\s+", "");
+            String productionsPart = parts[1].trim();
+            
+            // Split productions by | and sort them alphabetically
+            String[] productions = productionsPart.split("\\s*\\|\\s*");
+            // Trim each production and remove extra spaces
+            for (int i = 0; i < productions.length; i++) {
+                productions[i] = productions[i].trim().replaceAll("\\s+", "");
+            }
+            java.util.Arrays.sort(productions);
+            
+            // Reconstruct the line with sorted productions (no spaces for consistency)
+            String sortedLine = nonTerminal + "->" + String.join("|", productions);
+            normalizedLines.add(sortedLine);
+        }
+        
+        // Step 4: Sort all lines by non-terminal for consistent comparison
+        normalizedLines.sort(String::compareTo);
+        
+        // Step 5: Join all lines back together
+        return String.join("\n", normalizedLines);
     }
 }
