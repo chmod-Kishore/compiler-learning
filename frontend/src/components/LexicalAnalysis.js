@@ -1,34 +1,17 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Container,
   Box,
   Typography,
-  Tabs,
-  Tab,
   IconButton,
   Paper,
 } from '@mui/material';
 import { ArrowBack } from '@mui/icons-material';
 import SubsectionTheory from './SubsectionTheory';
-import Problems from './Problems';
-import Universal from './Universal';
-
-function TabPanel({ children, value, index }) {
-  return (
-    <div role="tabpanel" hidden={value !== index}>
-      {value === index && <Box sx={{ p: 0 }}>{children}</Box>}
-    </div>
-  );
-}
 
 function LexicalAnalysis() {
-  const [selectedTab, setSelectedTab] = useState(0);
   const navigate = useNavigate();
-
-  const handleTabChange = (event, newValue) => {
-    setSelectedTab(newValue);
-  };
 
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: '#f5f5f5' }}>
@@ -64,7 +47,7 @@ function LexicalAnalysis() {
         </Container>
       </Box>
 
-      {/* Content */}
+      {/* Content - Full Width */}
       <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
         <Paper
           elevation={0}
@@ -72,37 +55,10 @@ function LexicalAnalysis() {
             borderRadius: 3,
             overflow: 'hidden',
             boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
+            bgcolor: 'white',
           }}
         >
-          <Box sx={{ borderBottom: 1, borderColor: 'divider', bgcolor: 'white' }}>
-            <Tabs
-              value={selectedTab}
-              onChange={handleTabChange}
-              sx={{
-                '& .MuiTab-root': {
-                  textTransform: 'none',
-                  fontSize: '1rem',
-                  fontWeight: 500,
-                },
-              }}
-            >
-              <Tab label="Theory" />
-              <Tab label="Problems" />
-              <Tab label="Practice Tool" />
-            </Tabs>
-          </Box>
-
-          <Box sx={{ bgcolor: 'white', minHeight: '600px' }}>
-            <TabPanel value={selectedTab} index={0}>
-              <SubsectionTheory />
-            </TabPanel>
-            <TabPanel value={selectedTab} index={1}>
-              <Problems />
-            </TabPanel>
-            <TabPanel value={selectedTab} index={2}>
-              <Universal />
-            </TabPanel>
-          </Box>
+          <SubsectionTheory />
         </Paper>
       </Container>
     </Box>
