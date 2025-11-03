@@ -1,43 +1,34 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Container,
   Box,
   Typography,
+  Tabs,
+  Tab,
   IconButton,
   Paper,
-  Grid,
-  Card,
-  CardContent,
-  Chip,
 } from '@mui/material';
-import { ArrowBack, Code } from '@mui/icons-material';
+import { ArrowBack } from '@mui/icons-material';
+import SubsectionTheory from './SubsectionTheory';
+import Problems from './Problems';
+import Universal from './Universal';
 
-const topics = [
-  {
-    title: 'Regular Expression → ε-NFA',
-    description: 'Convert regular expressions to epsilon-NFA using Thompson\'s construction',
-    status: 'Coming Soon',
-  },
-  {
-    title: 'ε-NFA → NFA',
-    description: 'Eliminate epsilon transitions from the automaton',
-    status: 'Coming Soon',
-  },
-  {
-    title: 'NFA → DFA',
-    description: 'Convert NFA to DFA using subset construction',
-    status: 'Coming Soon',
-  },
-  {
-    title: 'DFA Minimization',
-    description: 'Minimize DFA states using partition refinement algorithm',
-    status: 'Coming Soon',
-  },
-];
+function TabPanel({ children, value, index }) {
+  return (
+    <div role="tabpanel" hidden={value !== index}>
+      {value === index && <Box sx={{ p: 0 }}>{children}</Box>}
+    </div>
+  );
+}
 
 function LexicalAnalysis() {
+  const [selectedTab, setSelectedTab] = useState(0);
   const navigate = useNavigate();
+
+  const handleTabChange = (event, newValue) => {
+    setSelectedTab(newValue);
+  };
 
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: '#f5f5f5' }}>
@@ -66,7 +57,7 @@ function LexicalAnalysis() {
                 Lexical Analysis
               </Typography>
               <Typography variant="body2" sx={{ opacity: 0.9 }}>
-                Phase 1: Tokenization & Finite Automata
+                Phase 1: RE → ε-NFA → NFA → DFA → Min DFA
               </Typography>
             </Box>
           </Box>
@@ -79,55 +70,39 @@ function LexicalAnalysis() {
           elevation={0}
           sx={{
             borderRadius: 3,
-            p: 4,
+            overflow: 'hidden',
             boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
           }}
         >
-          <Box textAlign="center" mb={4}>
-            <Code sx={{ fontSize: 60, color: '#667eea', mb: 2 }} />
-            <Typography variant="h5" gutterBottom fontWeight={600}>
-              Lexical Analysis Tools
-            </Typography>
-            <Typography variant="body1" color="text.secondary">
-              Learn about regular expressions, finite automata, and tokenization
-            </Typography>
+          <Box sx={{ borderBottom: 1, borderColor: 'divider', bgcolor: 'white' }}>
+            <Tabs
+              value={selectedTab}
+              onChange={handleTabChange}
+              sx={{
+                '& .MuiTab-root': {
+                  textTransform: 'none',
+                  fontSize: '1rem',
+                  fontWeight: 500,
+                },
+              }}
+            >
+              <Tab label="Theory" />
+              <Tab label="Problems" />
+              <Tab label="Practice Tool" />
+            </Tabs>
           </Box>
 
-          <Grid container spacing={3}>
-            {topics.map((topic, index) => (
-              <Grid item xs={12} md={6} key={index}>
-                <Card
-                  sx={{
-                    height: '100%',
-                    transition: 'all 0.3s',
-                    '&:hover': {
-                      transform: 'translateY(-4px)',
-                      boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
-                    },
-                  }}
-                >
-                  <CardContent>
-                    <Box display="flex" justifyContent="space-between" alignItems="start" mb={2}>
-                      <Typography variant="h6" fontWeight={600}>
-                        {topic.title}
-                      </Typography>
-                      <Chip
-                        label={topic.status}
-                        size="small"
-                        sx={{
-                          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                          color: 'white',
-                        }}
-                      />
-                    </Box>
-                    <Typography variant="body2" color="text.secondary">
-                      {topic.description}
-                    </Typography>
-                  </CardContent>
-                </Card>
-              </Grid>
-            ))}
-          </Grid>
+          <Box sx={{ bgcolor: 'white', minHeight: '600px' }}>
+            <TabPanel value={selectedTab} index={0}>
+              <SubsectionTheory />
+            </TabPanel>
+            <TabPanel value={selectedTab} index={1}>
+              <Problems />
+            </TabPanel>
+            <TabPanel value={selectedTab} index={2}>
+              <Universal />
+            </TabPanel>
+          </Box>
         </Paper>
       </Container>
     </Box>

@@ -10,8 +10,10 @@ const api = axios.create({
   },
 });
 
-export const getTheory = async () => {
-  const response = await api.get('/theory');
+export const getTheory = async (topic = 'syntax') => {
+  const response = await api.get('/theory', {
+    params: { topic }
+  });
   return response.data;
 };
 
@@ -32,6 +34,11 @@ export const generateUniversal = async (grammar) => {
   const response = await api.post('/universal', {
     grammar,
   });
+  return response.data;
+};
+
+export const getLexicalSubsection = async (id) => {
+  const response = await api.get(`/lexical/subsection/${id}`);
   return response.data;
 };
 

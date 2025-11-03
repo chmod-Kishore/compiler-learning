@@ -3,6 +3,7 @@ package com.compiler.learning.controller;
 
 import com.compiler.learning.dto.*;
 import com.compiler.learning.service.CompilerService;
+import com.compiler.learning.service.LexicalSubsectionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,10 +16,11 @@ import java.util.List;
 public class CompilerController {
 
     private final CompilerService compilerService;
+    private final LexicalSubsectionService lexicalSubsectionService;
 
     @GetMapping("/theory")
-    public ResponseEntity<TheoryResponse> getTheory() {
-        return ResponseEntity.ok(compilerService.getTheory());
+    public ResponseEntity<TheoryResponse> getTheory(@RequestParam(required = false, defaultValue = "syntax") String topic) {
+        return ResponseEntity.ok(compilerService.getTheory(topic));
     }
 
     @GetMapping("/problems")
@@ -34,5 +36,10 @@ public class CompilerController {
     @PostMapping("/universal")
     public ResponseEntity<UniversalResponse> generateUniversal(@RequestBody UniversalRequest request) {
         return ResponseEntity.ok(compilerService.generateUniversal(request));
+    }
+    
+    @GetMapping("/lexical/subsection/{id}")
+    public ResponseEntity<Subsection> getLexicalSubsection(@PathVariable String id) {
+        return ResponseEntity.ok(lexicalSubsectionService.getSubsection(id));
     }
 }

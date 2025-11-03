@@ -4,6 +4,7 @@ package com.compiler.learning.service;
 import com.compiler.learning.dto.*;
 import com.compiler.learning.entity.Problem;
 import com.compiler.learning.repository.ProblemRepository;
+import com.compiler.learning.service.LexicalAnalysisService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -16,8 +17,18 @@ public class CompilerService {
 
     private final ProblemRepository problemRepository;
     private final GrammarConversionService grammarConversionService;
+    private final LexicalAnalysisService lexicalAnalysisService;
 
-    public TheoryResponse getTheory() {
+    public TheoryResponse getTheory(String topic) {
+        if ("lexical".equalsIgnoreCase(topic)) {
+            return new TheoryResponse("Lexical Analysis - Automata Conversions", 
+                                    lexicalAnalysisService.getTheoryContent());
+        }
+        // Default to syntax analysis theory
+        return getSyntaxTheory();
+    }
+
+    private TheoryResponse getSyntaxTheory() {
         String content = """
             <h2>Left Recursion Elimination (Transforming LRG → RRG)</h2>
             
