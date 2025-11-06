@@ -13,4 +13,5 @@ public class ProblemResponse {
     private Long id;
     private String question;
     private String expectedOutput;
+    private String explanation;
 }

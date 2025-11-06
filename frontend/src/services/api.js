@@ -42,4 +42,9 @@ export const getLexicalSubsection = async (id) => {
   return response.data;
 };
 
+export const getHelp = async (helpRequest) => {
+  const response = await api.post('/helper', helpRequest);
+  return response.data;
+};
+
 export default api;

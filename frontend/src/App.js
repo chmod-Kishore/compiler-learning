@@ -8,6 +8,7 @@ import LexicalAnalysis from './components/LexicalAnalysis';
 import SyntaxAnalysis from './components/SyntaxAnalysis';
 import SemanticAnalysis from './components/SemanticAnalysis';
 import IntermediateCode from './components/IntermediateCode';
+import SubsectionTheory from './components/SubsectionTheory';
 
 const theme = createTheme({
   palette: {
@@ -15,14 +16,17 @@ const theme = createTheme({
       main: '#667eea',
     },
     secondary: {
-      main: '#f5576c',
+      main: '#f093fb',
     },
   },
   typography: {
-    fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
-  },
-  shape: {
-    borderRadius: 12,
+    fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
+    h4: {
+      fontWeight: 600,
+    },
+    h5: {
+      fontWeight: 600,
+    },
   },
 });
 
@@ -37,6 +41,7 @@ function App() {
           <Route path="/syntax" element={<SyntaxAnalysis />} />
           <Route path="/semantic" element={<SemanticAnalysis />} />
           <Route path="/intermediate" element={<IntermediateCode />} />
+          <Route path="/lexical/subsection/:id" element={<SubsectionTheory />} />
         </Routes>
       </Router>
     </ThemeProvider>

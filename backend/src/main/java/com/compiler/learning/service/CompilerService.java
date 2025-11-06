@@ -123,7 +123,7 @@ When ε is a beta production, write A' instead of εA'.
         List<Problem> problems = problemRepository.findAll();
 
         return problems.stream()
-                .map(p -> new ProblemResponse(p.getId(), p.getQuestion(), p.getExpectedOutput()))
+                .map(p -> new ProblemResponse(p.getId(), p.getQuestion(), p.getExpectedOutput(), p.getExplanation()))
                 .collect(Collectors.toList());
     }
 

@@ -107,17 +107,84 @@ function Problems() {
 
   return (
     <>
-      <Card sx={{ mt: 2 }}>
-        <CardContent>
-          <Typography variant="h5" gutterBottom>
-            Problem {currentIndex + 1} of {problems.length}
-          </Typography>
-
-          <Paper elevation={2} sx={{ p: 2, mb: 3, bgcolor: '#f5f5f5' }}>
-            <Typography variant="h6" gutterBottom>Question:</Typography>
-            <Typography component="pre" sx={{ whiteSpace: 'pre-wrap', fontFamily: 'monospace' }}>
-              {currentProblem.question}
+      <Card 
+        sx={{ 
+          mt: 2,
+          borderRadius: 3,
+          boxShadow: '0 8px 32px rgba(102, 126, 234, 0.15)',
+          border: '1px solid rgba(102, 126, 234, 0.1)',
+          overflow: 'hidden'
+        }}
+      >
+        <CardContent sx={{ p: 4 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
+            <Typography 
+              variant="h5" 
+              sx={{ 
+                fontWeight: 700,
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text'
+              }}
+            >
+              Problem {currentIndex + 1} of {problems.length}
             </Typography>
+          </Box>
+
+          <Paper 
+            elevation={3} 
+            sx={{ 
+              p: 3, 
+              mb: 3, 
+              borderRadius: 2,
+              background: 'linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%)',
+              border: '2px solid #ab47bc',
+              boxShadow: '0 4px 12px rgba(171, 71, 188, 0.2)'
+            }}
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+              <Typography 
+                sx={{ 
+                  fontSize: '1.5rem',
+                  lineHeight: 1
+                }}
+              >
+                ❓
+              </Typography>
+              <Typography 
+                variant="h6" 
+                sx={{ 
+                  fontWeight: 700,
+                  color: '#6a1b9a'
+                }}
+              >
+                Question:
+              </Typography>
+            </Box>
+            <Paper
+              elevation={0}
+              sx={{
+                p: 2.5,
+                bgcolor: 'white',
+                borderRadius: 2,
+                border: '1px solid #ce93d8'
+              }}
+            >
+              <Typography 
+                component="pre" 
+                sx={{ 
+                  whiteSpace: 'pre-wrap', 
+                  fontFamily: '"Fira Code", "Consolas", monospace',
+                  fontSize: '0.95rem',
+                  lineHeight: 1.8,
+                  color: '#424242',
+                  margin: 0
+                }}
+              >
+                {currentProblem.question}
+              </Typography>
+            </Paper>
           </Paper>
 
           <TextField
@@ -129,18 +196,73 @@ function Problems() {
             placeholder="Enter the grammar without left recursion..."
             value={userAnswer}
             onChange={(e) => setUserAnswer(e.target.value)}
-            sx={{ mb: 2 }}
+            sx={{ 
+              mb: 3,
+              '& .MuiOutlinedInput-root': {
+                backgroundColor: '#ffffff',
+                borderRadius: 2,
+                fontSize: '0.95rem',
+                fontFamily: '"Fira Code", "Consolas", monospace',
+                transition: 'all 0.3s ease',
+                '& fieldset': {
+                  borderColor: '#e0e0e0',
+                  borderWidth: 2
+                },
+                '&:hover fieldset': {
+                  borderColor: '#667eea',
+                  borderWidth: 2
+                },
+                '&.Mui-focused fieldset': {
+                  borderColor: '#667eea',
+                  borderWidth: 2,
+                  boxShadow: '0 0 0 3px rgba(102, 126, 234, 0.1)'
+                }
+              },
+              '& .MuiInputLabel-root': {
+                fontWeight: 600,
+                color: '#666',
+                '&.Mui-focused': {
+                  color: '#667eea',
+                  fontWeight: 700
+                }
+              }
+            }}
           />
 
           <Box display="flex" gap={2} mb={2}>
             <Button
               variant="contained"
-              color="primary"
+              size="large"
               startIcon={verifying ? <CircularProgress size={20} color="inherit" /> : <CheckCircle />}
               onClick={handleVerify}
               disabled={verifying}
+              sx={{
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                color: 'white',
+                fontWeight: 700,
+                fontSize: '1rem',
+                px: 4,
+                py: 1.5,
+                borderRadius: 2,
+                textTransform: 'none',
+                boxShadow: '0 4px 15px rgba(102, 126, 234, 0.4)',
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  background: 'linear-gradient(135deg, #764ba2 0%, #667eea 100%)',
+                  boxShadow: '0 6px 20px rgba(102, 126, 234, 0.6)',
+                  transform: 'translateY(-2px)'
+                },
+                '&:active': {
+                  transform: 'translateY(0px)',
+                  boxShadow: '0 2px 10px rgba(102, 126, 234, 0.4)'
+                },
+                '&.Mui-disabled': {
+                  background: '#e0e0e0',
+                  color: '#999'
+                }
+              }}
             >
-              Verify
+              {verifying ? 'Verifying...' : 'Verify Answer'}
             </Button>
           </Box>
 
@@ -187,40 +309,84 @@ function Problems() {
 
               {/* Explanation Content */}
               <Box sx={{ p: 3, bgcolor: '#fafafa' }}>
-                <Typography 
-                  sx={{ 
-                    whiteSpace: 'pre-wrap',
-                    lineHeight: 1.8,
-                    fontSize: '0.95rem',
-                    color: '#424242',
-                    fontFamily: '"Segoe UI", "Roboto", "Helvetica", sans-serif',
-                    '& strong': {
-                      color: '#1976d2',
-                      fontWeight: 600
-                    }
-                  }}
-                >
-                  {explanation.split('\n').map((line, index) => {
-                    // Format numbered steps with bold
-                    if (line.match(/^\d+\./)) {
-                      return (
-                        <Box key={index} sx={{ mb: 1, mt: index > 0 ? 1.5 : 0 }}>
-                          <Typography 
-                            component="span" 
-                            sx={{ 
-                              fontWeight: 600, 
-                              color: '#1976d2',
-                              fontSize: '1rem'
-                            }}
-                          >
-                            {line}
-                          </Typography>
-                        </Box>
-                      );
-                    }
-                    return <Box key={index} sx={{ mb: 0.5 }}>{line}</Box>;
-                  })}
-                </Typography>
+                {explanation.split('\n\n').map((paragraph, pIndex) => {
+                  const lines = paragraph.split('\n');
+                  const isStep = lines[0].includes('🔹 Step');
+                  
+                  if (isStep) {
+                    const stepTitle = lines[0];
+                    const stepContent = lines.slice(1).join('\n');
+                    
+                    return (
+                      <Box 
+                        key={pIndex} 
+                        sx={{ 
+                          mb: 2.5,
+                          p: 2,
+                          bgcolor: 'white',
+                          borderRadius: 2,
+                          border: '1px solid #e0e0e0',
+                          boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
+                        }}
+                      >
+                        {/* Step Title */}
+                        <Typography 
+                          sx={{ 
+                            fontWeight: 700,
+                            fontSize: '1rem',
+                            color: '#1565c0',
+                            mb: 1.5,
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1
+                          }}
+                        >
+                          {stepTitle}
+                        </Typography>
+                        
+                        {/* Step Content */}
+                        <Typography 
+                          component="div"
+                          sx={{ 
+                            fontSize: '0.9rem',
+                            lineHeight: 1.8,
+                            color: '#424242',
+                            pl: 3
+                          }}
+                        >
+                          {stepContent.split('\n').map((line, lIndex) => (
+                            <Box 
+                              key={lIndex} 
+                              sx={{ 
+                                mb: 0.5,
+                                fontFamily: line.includes('→') || line.includes('α') || line.includes('β') 
+                                  ? '"Fira Code", "Consolas", monospace' 
+                                  : '"Segoe UI", "Roboto", sans-serif'
+                              }}
+                            >
+                              {line}
+                            </Box>
+                          ))}
+                        </Typography>
+                      </Box>
+                    );
+                  }
+                  
+                  // Regular paragraph (non-step content)
+                  return (
+                    <Typography 
+                      key={pIndex}
+                      sx={{ 
+                        mb: 1.5,
+                        fontSize: '0.95rem',
+                        lineHeight: 1.8,
+                        color: '#424242'
+                      }}
+                    >
+                      {paragraph}
+                    </Typography>
+                  );
+                })}
               </Box>
 
               {/* Correct Answer Section */}
@@ -286,20 +452,64 @@ function Problems() {
         </CardContent>
       </Card>
 
-      <Box display="flex" justifyContent="space-between" mt={2}>
+      <Box display="flex" justifyContent="space-between" mt={3}>
         <Button
           variant="outlined"
+          size="large"
           startIcon={<NavigateBefore />}
           onClick={handlePrevious}
           disabled={currentIndex === 0}
+          sx={{
+            borderWidth: 2,
+            borderColor: '#667eea',
+            color: '#667eea',
+            fontWeight: 600,
+            px: 3,
+            py: 1.2,
+            borderRadius: 2,
+            textTransform: 'none',
+            transition: 'all 0.3s ease',
+            '&:hover': {
+              borderWidth: 2,
+              borderColor: '#764ba2',
+              backgroundColor: 'rgba(102, 126, 234, 0.05)',
+              transform: 'translateX(-3px)'
+            },
+            '&.Mui-disabled': {
+              borderColor: '#e0e0e0',
+              color: '#999'
+            }
+          }}
         >
           Previous
         </Button>
         <Button
           variant="outlined"
+          size="large"
           endIcon={<NavigateNext />}
           onClick={handleNext}
           disabled={currentIndex === problems.length - 1}
+          sx={{
+            borderWidth: 2,
+            borderColor: '#667eea',
+            color: '#667eea',
+            fontWeight: 600,
+            px: 3,
+            py: 1.2,
+            borderRadius: 2,
+            textTransform: 'none',
+            transition: 'all 0.3s ease',
+            '&:hover': {
+              borderWidth: 2,
+              borderColor: '#764ba2',
+              backgroundColor: 'rgba(102, 126, 234, 0.05)',
+              transform: 'translateX(3px)'
+            },
+            '&.Mui-disabled': {
+              borderColor: '#e0e0e0',
+              color: '#999'
+            }
+          }}
         >
           Next
         </Button>

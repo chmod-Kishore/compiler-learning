@@ -4,6 +4,7 @@ package com.compiler.learning.controller;
 import com.compiler.learning.dto.*;
 import com.compiler.learning.service.CompilerService;
 import com.compiler.learning.service.LexicalSubsectionService;
+import com.compiler.learning.service.HelperService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,6 +18,7 @@ public class CompilerController {
 
     private final CompilerService compilerService;
     private final LexicalSubsectionService lexicalSubsectionService;
+    private final HelperService helperService;
 
     @GetMapping("/theory")
     public ResponseEntity<TheoryResponse> getTheory(@RequestParam(required = false, defaultValue = "syntax") String topic) {
@@ -41,5 +43,10 @@ public class CompilerController {
     @GetMapping("/lexical/subsection/{id}")
     public ResponseEntity<Subsection> getLexicalSubsection(@PathVariable String id) {
         return ResponseEntity.ok(lexicalSubsectionService.getSubsection(id));
+    }
+
+    @PostMapping("/helper")
+    public ResponseEntity<HelpResponse> getHelp(@RequestBody HelpRequest request) {
+        return ResponseEntity.ok(helperService.getHelp(request));
     }
 }

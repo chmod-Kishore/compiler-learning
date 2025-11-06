@@ -15,7 +15,7 @@ INSERT INTO problems (question, expected_output, explanation) VALUES
 (
     'A -> Aab | c',
     'A -> cA''\nA'' -> abA'' | ε',
-    'Direct left recursion elimination:\n1. Identify: A -> Aab (left recursive), A -> c (non-recursive)\n2. α = "ab", β = "c"\n3. Create A'' for recursion\n4. A -> cA'' (β followed by A'')\n5. A'' -> abA'' | ε (α followed by A'' or epsilon)'
+    '🔹 Step 1: Identify the Type of Recursion\nDirect left recursion in production A → Aab\n\n🔹 Step 2: Substitute\nFor indirect recursion, substitute higher-order non-terminals in lower ones.\nNot applicable (direct recursion only)\n\n🔹 Step 3: Separate α (recursive part) and β (non-recursive part)\nα = "ab" (follows A in the recursive production)\nβ = "c" (the non-recursive production)\n\n🔹 Step 4: Create New Variable (A′)\nIntroduce A'' to handle the recursive continuation\n\n🔹 Step 5: Rewrite Final Grammar\nA → cA'' (β followed by A'')\nA'' → abA'' | ε (α followed by A'' or epsilon)'
 );
 
 -- Problem 2: Direct Left Recursion with Multiple Alternatives
@@ -23,7 +23,7 @@ INSERT INTO problems (question, expected_output, explanation) VALUES
 (
     'E -> E+T | E-T | T',
     'E -> TE''\nE'' -> +TE'' | -TE'' | ε',
-    'Classic expression grammar with direct left recursion:\n1. Left recursive: E -> E+T, E -> E-T\n2. Non-recursive: E -> T\n3. α₁ = "+T", α₂ = "-T", β = "T"\n4. E -> TE'' (start with T, continue with E'')\n5. E'' -> +TE'' | -TE'' | ε'
+    '🔹 Step 1: Identify the Type of Recursion\nDirect left recursion in E → E+T and E → E-T\n\n🔹 Step 2: Substitute\nFor indirect recursion, substitute higher-order non-terminals in lower ones.\nNot applicable (direct recursion only)\n\n🔹 Step 3: Separate α (recursive part) and β (non-recursive part)\nα₁ = "+T", α₂ = "-T" (recursive parts after E)\nβ = "T" (non-recursive production)\n\n🔹 Step 4: Create New Variable (E′)\nIntroduce E'' to handle multiple recursive alternatives\n\n🔹 Step 5: Rewrite Final Grammar\nE → TE'' (start with T, continue with E'')\nE'' → +TE'' | -TE'' | ε (all α values with E'' or epsilon)'
 );
 
 -- Problem 3: Indirect Left Recursion (Simple)
@@ -31,7 +31,7 @@ INSERT INTO problems (question, expected_output, explanation) VALUES
 (
     'S -> Aa | b\nA -> Sc | d',
     'S -> Aa | b\nA -> bcA'' | dA''\nA'' -> acA'' | ε',
-    'Indirect left recursion through S and A:\n1. Order: S, A\n2. Process A: substitute S in A -> Sc\n3. A -> (Aa | b)c | d = Aac | bc | d\n4. Eliminate direct recursion from A\n5. A -> bcA'' | dA'', A'' -> acA'' | ε\n6. S remains unchanged'
+    '🔹 Step 1: Identify the Type of Recursion\nIndirect left recursion: S → A → S (through A → Sc)\nOrder non-terminals: S, A\n\n🔹 Step 2: Substitute\nFor indirect recursion, substitute higher-order non-terminals in lower ones.\nSubstitute S in A → Sc:\nA → (Aa | b)c | d\nA → Aac | bc | d\n\n🔹 Step 3: Separate α (recursive part) and β (non-recursive part)\nAfter substitution:\nα = "ac" (recursive part)\nβ₁ = "bc", β₂ = "d" (non-recursive parts)\n\n🔹 Step 4: Create New Variable (A′)\nIntroduce A'' for handling recursion in A\n\n🔹 Step 5: Rewrite Final Grammar\nS → Aa | b (unchanged)\nA → bcA'' | dA'' (β productions with A'')\nA'' → acA'' | ε (α production with A'' or epsilon)'
 );
 
 -- Problem 4: More Complex Indirect Recursion
@@ -39,7 +39,7 @@ INSERT INTO problems (question, expected_output, explanation) VALUES
 (
     'S -> Aa | bB\nA -> Ac | Sd | ε\nB -> e | f',
     'S -> Aa | bB\nA -> bBdA'' | A''\nA'' -> cA'' | adA'' | ε\nB -> e | f',
-    'Multi-step indirect recursion:\n1. Order: S, A, B\n2. Process A (i=2): substitute S in A -> Sd\n3. A -> Ac | Aad | bBd | ε\n4. Eliminate direct recursion from A\n5. β = "bBd", "ε" and α = "c", "ad"\n6. A -> bBdA'' | A'' (ε becomes just A'')\n7. A'' -> cA'' | adA'' | ε\n8. B has no left recursion'
+    '🔹 Step 1: Identify the Type of Recursion\nIndirect left recursion: A → S → A (through A → Sd)\nOrder non-terminals: S, A, B\n\n🔹 Step 2: Substitute\nFor indirect recursion, substitute higher-order non-terminals in lower ones.\nSubstitute S in A → Sd:\nA → (Aa | bB)d\nA → Aad | bBd\nCombine with A → Ac | ε:\nA → Ac | Aad | bBd | ε\n\n🔹 Step 3: Separate α (recursive part) and β (non-recursive part)\nAfter substitution:\nα₁ = "c", α₂ = "ad" (recursive parts)\nβ₁ = "bBd", β₂ = "ε" (non-recursive parts)\n\n🔹 Step 4: Create New Variable (A′)\nIntroduce A'' for handling recursion in A\n\n🔹 Step 5: Rewrite Final Grammar\nS → Aa | bB (unchanged)\nA → bBdA'' | A'' (when β is ε, write just A'')\nA'' → cA'' | adA'' | ε (all α values)\nB → e | f (unchanged)'
 );
 
 -- Problem 5: Direct LR with No Non-recursive Alternative
@@ -47,7 +47,7 @@ INSERT INTO problems (question, expected_output, explanation) VALUES
 (
     'A -> Aa | Ab',
     'A -> A''\nA'' -> aA'' | bA'' | ε',
-    'Edge case: no β productions\n1. All productions are left recursive\n2. α₁ = "a", α₂ = "b"\n3. Since no β, A -> A'' (just the prime)\n4. A'' -> aA'' | bA'' | ε'
+    '🔹 Step 1: Identify the Type of Recursion\nDirect left recursion in A → Aa and A → Ab\nEdge case: No non-recursive alternative\n\n🔹 Step 2: Substitute\nFor indirect recursion, substitute higher-order non-terminals in lower ones.\nNot applicable (direct recursion only)\n\n🔹 Step 3: Separate α (recursive part) and β (non-recursive part)\nα₁ = "a", α₂ = "b" (all productions are recursive)\nβ = (empty - no non-recursive productions)\n\n🔹 Step 4: Create New Variable (A′)\nIntroduce A'' to handle all recursive cases\n\n🔹 Step 5: Rewrite Final Grammar\nA → A'' (since no β, start directly with A'')\nA'' → aA'' | bA'' | ε (all α values with A'' or epsilon)'
 );
 
 -- Problem 6: Multiple Non-terminals with Direct LR
@@ -55,7 +55,7 @@ INSERT INTO problems (question, expected_output, explanation) VALUES
 (
     'S -> Sa | Ab\nA -> Ac | d',
     'S -> AbS''\nS'' -> aS'' | ε\nA -> dA''\nA'' -> cA'' | ε',
-    'Two non-terminals each with direct LR:\n1. S: α="a", β="Ab" → S -> AbS'', S'' -> aS'' | ε\n2. A: α="c", β="d" → A -> dA'', A'' -> cA'' | ε\n3. No indirect recursion between them'
+    '🔹 Step 1: Identify the Type of Recursion\nDirect left recursion in both S and A\nS → Sa (direct)\nA → Ac (direct)\nNo indirect recursion between them\n\n🔹 Step 2: Substitute\nFor indirect recursion, substitute higher-order non-terminals in lower ones.\nNot applicable (direct recursion only)\n\n🔹 Step 3: Separate α (recursive part) and β (non-recursive part)\nFor S: α = "a", β = "Ab"\nFor A: α = "c", β = "d"\n\n🔹 Step 4: Create New Variables (S′ and A′)\nIntroduce S'' for S recursion\nIntroduce A'' for A recursion\n\n🔹 Step 5: Rewrite Final Grammar\nS → AbS'' (β followed by S'')\nS'' → aS'' | ε (α followed by S'' or epsilon)\nA → dA'' (β followed by A'')\nA'' → cA'' | ε (α followed by A'' or epsilon)'
 );
 
 -- Problem 7: Complex Indirect with Three Non-terminals
@@ -63,7 +63,7 @@ INSERT INTO problems (question, expected_output, explanation) VALUES
 (
     'S -> Aa | b\nA -> Bb | c\nB -> Sc | d',
     'S -> Aa | b\nA -> Bb | c\nB -> cacB'' | bcB'' | dB''\nB'' -> bacB'' | ε',
-    'Three-way indirect recursion S→A→B→S:\n1. Order: S, A, B\n2. Process B: substitute S in B -> Sc\n3. B -> (Aa | b)c | d = Aac | bc | d\n4. Substitute A: B -> (Bb | c)ac | bc | d = Bbac | cac | bc | d\n5. Eliminate direct recursion from B\n6. B -> cacB'' | bcB'' | dB'', B'' -> bacB'' | ε\n7. S and A remain unchanged'
+    '🔹 Step 1: Identify the Type of Recursion\nIndirect left recursion: S → A → B → S (three-way cycle)\nOrder non-terminals: S, A, B\n\n🔹 Step 2: Substitute\nFor indirect recursion, substitute higher-order non-terminals in lower ones.\nSubstitute S in B → Sc:\nB → (Aa | b)c | d = Aac | bc | d\nSubstitute A in B → Aac:\nB → (Bb | c)ac | bc | d = Bbac | cac | bc | d\n\n🔹 Step 3: Separate α (recursive part) and β (non-recursive part)\nAfter all substitutions:\nα = "bac" (recursive part)\nβ₁ = "cac", β₂ = "bc", β₃ = "d" (non-recursive parts)\n\n🔹 Step 4: Create New Variable (B′)\nIntroduce B'' for handling recursion in B\n\n🔹 Step 5: Rewrite Final Grammar\nS → Aa | b (unchanged)\nA → Bb | c (unchanged)\nB → cacB'' | bcB'' | dB'' (all β productions with B'')\nB'' → bacB'' | ε (α production with B'' or epsilon)'
 );
 
 -- Problem 8: Tricky - Hidden Indirect Recursion
@@ -71,7 +71,7 @@ INSERT INTO problems (question, expected_output, explanation) VALUES
 (
     'E -> T\nT -> F\nF -> E+F | id',
     'E -> T\nT -> F\nF -> idF''\nF'' -> +FF'' | ε',
-    'Looks like indirect but simplifies:\n1. F -> E+F has potential for indirect recursion\n2. Substituting: F -> T+F -> F+F\n3. Direct recursion appears: F -> F+F | id\n4. Eliminate: F -> idF'', F'' -> +FF'' | ε\n5. E and T remain unchanged as pass-through'
+    '🔹 Step 1: Identify the Type of Recursion\nIndirect left recursion: F → E → T → F (circular chain)\nOrder non-terminals: E, T, F\n\n🔹 Step 2: Substitute\nFor indirect recursion, substitute higher-order non-terminals in lower ones.\nSubstitute E in F → E+F:\nF → T+F (since E → T)\nSubstitute T in F → T+F:\nF → F+F (since T → F)\nCombine: F → F+F | id\n\n🔹 Step 3: Separate α (recursive part) and β (non-recursive part)\nAfter substitution:\nα = "+F" (recursive part)\nβ = "id" (non-recursive part)\n\n🔹 Step 4: Create New Variable (F′)\nIntroduce F'' for handling recursion in F\n\n🔹 Step 5: Rewrite Final Grammar\nE → T (unchanged, pass-through)\nT → F (unchanged, pass-through)\nF → idF'' (β followed by F'')\nF'' → +FF'' | ε (α followed by F'' or epsilon)'
 );
 
 -- Verify the inserted data
