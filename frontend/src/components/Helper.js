@@ -20,9 +20,9 @@ import {
   StepLabel
 } from '@mui/material';
 import { Help, Lightbulb, CheckCircle } from '@mui/icons-material';
-import { getHelp } from '../services/api';
+import { getHelp, getLeftFactoringHelp } from '../services/api';
 
-const STEPS = [
+const LEFT_RECURSION_STEPS = [
   { value: 1, label: 'Step 1: Identify the Type of Recursion' },
   { value: 2, label: 'Step 2: Substitute' },
   { value: 3, label: 'Step 3: Separate α and β' },
@@ -30,7 +30,16 @@ const STEPS = [
   { value: 5, label: 'Step 5: Rewrite Final Grammar' }
 ];
 
-function Helper() {
+const LEFT_FACTORING_STEPS = [
+  { value: 1, label: 'Step 1: Identify Common Prefixes' },
+  { value: 2, label: 'Step 2: Group Productions by Prefix' },
+  { value: 3, label: 'Step 3: Create New Variable' },
+  { value: 4, label: 'Step 4: Rewrite Productions' },
+  { value: 5, label: 'Step 5: Verify Final Grammar' }
+];
+
+function Helper({ topic = 'left-recursion' }) {
+  const STEPS = topic === 'left-factoring' ? LEFT_FACTORING_STEPS : LEFT_RECURSION_STEPS;
   const [inputGrammar, setInputGrammar] = useState('');
   const [stuckAtStep, setStuckAtStep] = useState('');
   const [studentWork, setStudentWork] = useState('');
@@ -92,11 +101,16 @@ function Helper() {
 
     setLoading(true);
     try {
-      const result = await getHelp({
+      const helpRequest = {
         grammar: inputGrammar.trim(),
         stuckAtStep: parseInt(stuckAtStep),
         studentWork: studentWork.trim()
-      });
+      };
+      
+      // Use appropriate helper service based on topic
+      const result = topic === 'left-factoring'
+        ? await getLeftFactoringHelp(helpRequest)
+        : await getHelp(helpRequest);
       
       setHelpResponse(result);
     } catch (err) {
@@ -144,6 +158,7 @@ function Helper() {
           
           <Typography variant="body2" color="text.secondary" gutterBottom sx={{ mb: 3 }}>
             Tell us where you're stuck, and we'll help you identify mistakes and guide you to the solution
+            {topic === 'left-factoring' && ' with left factoring'}
           </Typography>
 
           {/* Input Grammar */}
@@ -152,8 +167,10 @@ function Helper() {
             multiline
             rows={4}
             variant="outlined"
-            label="Original Grammar (LRG)"
-            placeholder="Enter the original grammar with left recursion...&#10;Example:&#10;A -> Aab | c"
+            label={topic === 'left-factoring' ? 'Original Grammar (with common prefixes)' : 'Original Grammar (LRG)'}
+            placeholder={topic === 'left-factoring'
+              ? 'Enter the original grammar with common prefixes...\nExample:\nS -> iEtS | iEtSeS | a'
+              : 'Enter the original grammar with left recursion...\nExample:\nA -> Aab | c'}
             value={inputGrammar}
             onChange={(e) => setInputGrammar(e.target.value)}
             sx={{ 
@@ -192,7 +209,7 @@ function Helper() {
           {/* Progress Stepper */}
           <Paper elevation={0} sx={{ p: 2, mb: 3, bgcolor: '#f5f5f5' }}>
             <Typography variant="subtitle2" gutterBottom sx={{ fontWeight: 600 }}>
-              Elimination Process:
+              {topic === 'left-factoring' ? 'Factoring Process:' : 'Elimination Process:'}
             </Typography>
             <Stepper activeStep={stuckAtStep ? parseInt(stuckAtStep) - 1 : -1} alternativeLabel>
               {STEPS.map((step) => (

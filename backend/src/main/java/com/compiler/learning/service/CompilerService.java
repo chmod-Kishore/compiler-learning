@@ -3,7 +3,9 @@ package com.compiler.learning.service;
 
 import com.compiler.learning.dto.*;
 import com.compiler.learning.entity.Problem;
+import com.compiler.learning.entity.LeftFactoringProblem;
 import com.compiler.learning.repository.ProblemRepository;
+import com.compiler.learning.repository.LeftFactoringProblemRepository;
 import com.compiler.learning.service.LexicalAnalysisService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -16,15 +18,20 @@ import java.util.stream.Collectors;
 public class CompilerService {
 
     private final ProblemRepository problemRepository;
+    private final LeftFactoringProblemRepository leftFactoringProblemRepository;
     private final GrammarConversionService grammarConversionService;
+    private final LeftFactoringService leftFactoringService;
     private final LexicalAnalysisService lexicalAnalysisService;
 
     public TheoryResponse getTheory(String topic) {
         if ("lexical".equalsIgnoreCase(topic)) {
             return new TheoryResponse("Lexical Analysis - Automata Conversions", 
                                     lexicalAnalysisService.getTheoryContent());
+        } else if ("left-factoring".equalsIgnoreCase(topic)) {
+            return new TheoryResponse("Left Factoring (Grammar Simplification)", 
+                                    leftFactoringService.getTheory());
         }
-        // Default to syntax analysis theory
+        // Default to syntax analysis (left recursion) theory
         return getSyntaxTheory();
     }
 
@@ -127,8 +134,32 @@ When ε is a beta production, write A' instead of εA'.
                 .collect(Collectors.toList());
     }
 
+    public List<ProblemResponse> getLeftFactoringProblems() {
+        List<LeftFactoringProblem> problems = leftFactoringProblemRepository.findAll();
+
+        return problems.stream()
+                .map(p -> new ProblemResponse(p.getId(), p.getQuestion(), p.getExpectedOutput(), p.getExplanation()))
+                .collect(Collectors.toList());
+    }
+
     public VerifyResponse verifyAnswer(VerifyRequest request) {
         Problem problem = problemRepository.findById(request.getProblemId())
+                .orElseThrow(() -> new RuntimeException("Problem not found"));
+
+        String userAnswer = normalizeAnswer(request.getUserAnswer());
+        String expectedAnswer = normalizeAnswer(problem.getExpectedOutput());
+
+        boolean isCorrect = userAnswer.equals(expectedAnswer);
+
+        if (isCorrect) {
+            return new VerifyResponse(true, null, null);
+        } else {
+            return new VerifyResponse(false, problem.getExplanation(), problem.getExpectedOutput());
+        }
+    }
+
+    public VerifyResponse verifyLeftFactoringAnswer(VerifyRequest request) {
+        LeftFactoringProblem problem = leftFactoringProblemRepository.findById(request.getProblemId())
                 .orElseThrow(() -> new RuntimeException("Problem not found"));
 
         String userAnswer = normalizeAnswer(request.getUserAnswer());
@@ -148,6 +179,13 @@ When ε is a beta production, write A' instead of εA'.
                 grammarConversionService.convertLRGtoRRG(request.getGrammar());
 
         return new UniversalResponse(result.transformedGrammar, result.steps);
+    }
+
+    public UniversalResponse generateLeftFactoring(UniversalRequest request) {
+        LeftFactoringService.FactoringResult result =
+                leftFactoringService.performLeftFactoring(request.getGrammar());
+
+        return new UniversalResponse(result.getTransformedGrammar(), result.getSteps());
     }
 
     private String normalizeAnswer(String answer) {

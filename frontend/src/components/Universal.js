@@ -14,9 +14,9 @@ import {
   Alert
 } from '@mui/material';
 import { PlayArrow, Refresh } from '@mui/icons-material';
-import { generateUniversal } from '../services/api';
+import { generateUniversal, generateLeftFactoring } from '../services/api';
 
-function Universal() {
+function Universal({ topic = 'left-recursion' }) {
   const [inputGrammar, setInputGrammar] = useState('');
   const [transformedGrammar, setTransformedGrammar] = useState('');
   const [steps, setSteps] = useState([]);
@@ -32,7 +32,10 @@ function Universal() {
 
     setLoading(true);
     try {
-      const result = await generateUniversal(inputGrammar.trim());
+      // Use appropriate service based on topic
+      const result = topic === 'left-factoring'
+        ? await generateLeftFactoring(inputGrammar.trim())
+        : await generateUniversal(inputGrammar.trim());
       setTransformedGrammar(result.transformedGrammar);
       setSteps(result.steps);
       setShowResult(true);
@@ -75,10 +78,14 @@ function Universal() {
                 mb: 1
               }}
             >
-              Left Recursion Elimination Tool (LRG → RRG)
+              {topic === 'left-factoring' 
+                ? 'Left Factoring Tool' 
+                : 'Left Recursion Elimination Tool (LRG → RRG)'}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              Enter any grammar with left recursion (direct or indirect) to eliminate it
+              {topic === 'left-factoring'
+                ? 'Enter any grammar with common prefixes to perform left factoring'
+                : 'Enter any grammar with left recursion (direct or indirect) to eliminate it'}
             </Typography>
           </Box>
 
@@ -88,7 +95,17 @@ function Universal() {
             rows={8}
             variant="outlined"
             label="Input Grammar"
-            placeholder={`Enter your grammar here...
+            placeholder={topic === 'left-factoring' 
+              ? `Enter your grammar here...
+Example 1:
+S -> iEtS | iEtSeS | a
+E -> b
+
+Example 2:
+A -> abcd | abef | xyz
+
+Note: Productions with common prefixes will be factored`
+              : `Enter your grammar here...
 Example 1 (Direct):
 A -> Aab | c
 
@@ -166,7 +183,7 @@ Note: Use ε or # for epsilon (empty string)`}
                 }
               }}
             >
-              {loading ? 'Processing...' : 'Eliminate Left Recursion'}
+              {loading ? 'Processing...' : (topic === 'left-factoring' ? 'Perform Left Factoring' : 'Eliminate Left Recursion')}
             </Button>
             <Button
               variant="outlined"
@@ -232,7 +249,7 @@ Note: Use ε or # for epsilon (empty string)`}
                     }}
                   >
                     <Box component="span" sx={{ fontSize: '1.5rem', lineHeight: 1 }}>✅</Box>
-                    Grammar Without Left Recursion
+                    {topic === 'left-factoring' ? 'Factored Grammar' : 'Grammar Without Left Recursion'}
                   </Typography>
                 </Box>
                 <Box sx={{ p: 3, bgcolor: '#fafafa' }}>
@@ -291,7 +308,7 @@ Note: Use ε or # for epsilon (empty string)`}
                     }}
                   >
                     <Box component="span" sx={{ fontSize: '1.5rem', lineHeight: 1 }}>📋</Box>
-                    Elimination Steps
+                    {topic === 'left-factoring' ? 'Factoring Steps' : 'Elimination Steps'}
                   </Typography>
                 </Box>
                 <Box sx={{ p: 3, bgcolor: '#fafafa' }}>

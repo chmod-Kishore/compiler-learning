@@ -13,9 +13,9 @@ import {
   Paper
 } from '@mui/material';
 import { CheckCircle, NavigateNext, NavigateBefore } from '@mui/icons-material';
-import { getProblems, verifyAnswer } from '../services/api';
+import { getProblems, verifyAnswer, getLeftFactoringProblems, verifyLeftFactoringAnswer } from '../services/api';
 
-function Problems() {
+function Problems({ topic = 'left-recursion' }) {
   const [problems, setProblems] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [userAnswer, setUserAnswer] = useState('');
@@ -28,11 +28,14 @@ function Problems() {
 
   useEffect(() => {
     loadProblems();
-  }, []);
+  }, [topic]);
 
   const loadProblems = async () => {
     try {
-      const data = await getProblems();
+      // Fetch problems based on topic
+      const data = topic === 'left-factoring' 
+        ? await getLeftFactoringProblems() 
+        : await getProblems();
       setProblems(data);
     } catch (err) {
       console.error('Error loading problems:', err);
@@ -50,7 +53,10 @@ function Problems() {
 
     setVerifying(true);
     try {
-      const result = await verifyAnswer(currentProblem.id, userAnswer.trim());
+      // Use appropriate verify function based on topic
+      const result = topic === 'left-factoring'
+        ? await verifyLeftFactoringAnswer(currentProblem.id, userAnswer.trim())
+        : await verifyAnswer(currentProblem.id, userAnswer.trim());
       
       if (result.correct) {
         setSnackbar({ open: true, message: '✓ Correct!', severity: 'success' });
@@ -341,7 +347,12 @@ function Problems() {
                             gap: 1
                           }}
                         >
-                          {stepTitle}
+                          {stepTitle.split(/(\*\*.*?\*\*)/g).map((part, i) => {
+                            if (part.startsWith('**') && part.endsWith('**')) {
+                              return <strong key={i}>{part.slice(2, -2)}</strong>;
+                            }
+                            return part;
+                          })}
                         </Typography>
                         
                         {/* Step Content */}
@@ -354,19 +365,32 @@ function Problems() {
                             pl: 3
                           }}
                         >
-                          {stepContent.split('\n').map((line, lIndex) => (
-                            <Box 
-                              key={lIndex} 
-                              sx={{ 
-                                mb: 0.5,
-                                fontFamily: line.includes('→') || line.includes('α') || line.includes('β') 
-                                  ? '"Fira Code", "Consolas", monospace' 
-                                  : '"Segoe UI", "Roboto", sans-serif'
-                              }}
-                            >
-                              {line}
-                            </Box>
-                          ))}
+                          {stepContent.split('\n').map((line, lIndex) => {
+                            // Convert **text** to bold
+                            const renderLineWithBold = (text) => {
+                              const parts = text.split(/(\*\*.*?\*\*)/g);
+                              return parts.map((part, i) => {
+                                if (part.startsWith('**') && part.endsWith('**')) {
+                                  return <strong key={i}>{part.slice(2, -2)}</strong>;
+                                }
+                                return part;
+                              });
+                            };
+
+                            return (
+                              <Box 
+                                key={lIndex} 
+                                sx={{ 
+                                  mb: 0.5,
+                                  fontFamily: line.includes('→') || line.includes('α') || line.includes('β') 
+                                    ? '"Fira Code", "Consolas", monospace' 
+                                    : '"Segoe UI", "Roboto", sans-serif'
+                                }}
+                              >
+                                {renderLineWithBold(line)}
+                              </Box>
+                            );
+                          })}
                         </Typography>
                       </Box>
                     );
@@ -383,7 +407,12 @@ function Problems() {
                         color: '#424242'
                       }}
                     >
-                      {paragraph}
+                      {paragraph.split(/(\*\*.*?\*\*)/g).map((part, i) => {
+                        if (part.startsWith('**') && part.endsWith('**')) {
+                          return <strong key={i}>{part.slice(2, -2)}</strong>;
+                        }
+                        return part;
+                      })}
                     </Typography>
                   );
                 })}

@@ -47,4 +47,30 @@ export const getHelp = async (helpRequest) => {
   return response.data;
 };
 
+// Left Factoring API Functions
+export const getLeftFactoringProblems = async () => {
+  const response = await api.get('/left-factoring/problems');
+  return response.data;
+};
+
+export const verifyLeftFactoringAnswer = async (problemId, userAnswer) => {
+  const response = await api.post('/left-factoring/verify', {
+    problemId,
+    userAnswer,
+  });
+  return response.data;
+};
+
+export const generateLeftFactoring = async (grammar) => {
+  const response = await api.post('/left-factoring/generate', {
+    grammar,
+  });
+  return response.data;
+};
+
+export const getLeftFactoringHelp = async (helpRequest) => {
+  const response = await api.post('/left-factoring/helper', helpRequest);
+  return response.data;
+};
+
 export default api;
