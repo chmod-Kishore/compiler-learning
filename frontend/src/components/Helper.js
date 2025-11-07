@@ -613,7 +613,7 @@ function Helper({ topic = 'left-recursion' }) {
                           fontWeight: 500
                         }}
                       >
-                        {helpResponse.nextStep}
+                        {renderFormattedText(helpResponse.nextStep)}
                       </Typography>
                     </Box>
                   </Box>
@@ -740,7 +740,7 @@ function Helper({ topic = 'left-recursion' }) {
                         }}
                       >
                         <span style={{ fontSize: '1.2rem' }}>💡</span>
-                        <span style={{ flex: 1 }}>{hint}</span>
+                        <span style={{ flex: 1 }}>{renderFormattedText(hint)}</span>
                       </Typography>
                     </Box>
                   ))}

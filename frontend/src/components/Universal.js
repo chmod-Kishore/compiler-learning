@@ -24,6 +24,19 @@ function Universal({ topic = 'left-recursion' }) {
   const [showResult, setShowResult] = useState(false);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'info' });
 
+  // Helper function to render text with bold markers (**text**)
+  const renderFormattedText = (text) => {
+    if (!text) return null;
+    
+    const parts = text.split(/(\*\*.*?\*\*)/g);
+    return parts.map((part, i) => {
+      if (part.startsWith('**') && part.endsWith('**')) {
+        return <strong key={i} style={{ fontWeight: 700 }}>{part.slice(2, -2)}</strong>;
+      }
+      return part;
+    });
+  };
+
   const handleGenerate = async () => {
     if (!inputGrammar.trim()) {
       setSnackbar({ open: true, message: 'Please enter a grammar', severity: 'warning' });
@@ -368,7 +381,7 @@ Note: Use ε or # for epsilon (empty string)`}
                             gap: 1
                           }}
                         >
-                          {step.title}
+                          {renderFormattedText(step.title)}
                         </Typography>
                         
                         {/* Step Content */}
@@ -396,7 +409,7 @@ Note: Use ε or # for epsilon (empty string)`}
                                       : '"Segoe UI", "Roboto", sans-serif'
                                   }}
                                 >
-                                  {subLine}
+                                  {renderFormattedText(subLine)}
                                 </Box>
                               ));
                             })}
