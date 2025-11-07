@@ -14,7 +14,7 @@ import {
   Alert
 } from '@mui/material';
 import { PlayArrow, Refresh } from '@mui/icons-material';
-import { generateUniversal, generateLeftFactoring } from '../services/api';
+import { generateUniversal, generateLeftFactoring, generateFirstFollow } from '../services/api';
 
 function Universal({ topic = 'left-recursion' }) {
   const [inputGrammar, setInputGrammar] = useState('');
@@ -23,6 +23,10 @@ function Universal({ topic = 'left-recursion' }) {
   const [loading, setLoading] = useState(false);
   const [showResult, setShowResult] = useState(false);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'info' });
+  
+  // For First & Follow
+  const [firstSets, setFirstSets] = useState(null);
+  const [followSets, setFollowSets] = useState(null);
 
   // Helper function to render text with bold markers (**text**)
   const renderFormattedText = (text) => {
@@ -46,11 +50,26 @@ function Universal({ topic = 'left-recursion' }) {
     setLoading(true);
     try {
       // Use appropriate service based on topic
-      const result = topic === 'left-factoring'
-        ? await generateLeftFactoring(inputGrammar.trim())
-        : await generateUniversal(inputGrammar.trim());
-      setTransformedGrammar(result.transformedGrammar);
-      setSteps(result.steps);
+      let result;
+      if (topic === 'first-follow') {
+        result = await generateFirstFollow(inputGrammar.trim());
+        setFirstSets(result.firstSets);
+        setFollowSets(result.followSets);
+        setSteps(result.steps || []);
+        setTransformedGrammar('');
+      } else if (topic === 'left-factoring') {
+        result = await generateLeftFactoring(inputGrammar.trim());
+        setTransformedGrammar(result.transformedGrammar);
+        setSteps(result.steps);
+        setFirstSets(null);
+        setFollowSets(null);
+      } else {
+        result = await generateUniversal(inputGrammar.trim());
+        setTransformedGrammar(result.transformedGrammar);
+        setSteps(result.steps);
+        setFirstSets(null);
+        setFollowSets(null);
+      }
       setShowResult(true);
     } catch (err) {
       console.error('Error generating transformation:', err);
@@ -65,6 +84,8 @@ function Universal({ topic = 'left-recursion' }) {
     setTransformedGrammar('');
     setSteps([]);
     setShowResult(false);
+    setFirstSets(null);
+    setFollowSets(null);
   };
 
   return (
@@ -91,12 +112,16 @@ function Universal({ topic = 'left-recursion' }) {
                 mb: 1
               }}
             >
-              {topic === 'left-factoring' 
+              {topic === 'first-follow' 
+                ? 'FIRST & FOLLOW Solver' 
+                : topic === 'left-factoring' 
                 ? 'Left Factoring Tool' 
                 : 'Left Recursion Elimination Tool (LRG → RRG)'}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              {topic === 'left-factoring'
+              {topic === 'first-follow'
+                ? 'Enter any grammar to automatically compute FIRST and FOLLOW sets'
+                : topic === 'left-factoring'
                 ? 'Enter any grammar with common prefixes to perform left factoring'
                 : 'Enter any grammar with left recursion (direct or indirect) to eliminate it'}
             </Typography>
@@ -196,7 +221,11 @@ Note: Use ε or # for epsilon (empty string)`}
                 }
               }}
             >
-              {loading ? 'Processing...' : (topic === 'left-factoring' ? 'Perform Left Factoring' : 'Eliminate Left Recursion')}
+              {loading ? 'Processing...' : (
+                topic === 'first-follow' ? 'Compute FIRST & FOLLOW' :
+                topic === 'left-factoring' ? 'Perform Left Factoring' : 
+                'Eliminate Left Recursion'
+              )}
             </Button>
             <Button
               variant="outlined"
@@ -234,69 +263,175 @@ Note: Use ε or # for epsilon (empty string)`}
             <>
               <Divider sx={{ my: 3 }} />
 
-              {/* Grammar Output Section */}
-              <Paper 
-                elevation={3} 
-                sx={{ 
-                  mb: 3, 
-                  borderRadius: 2,
-                  overflow: 'hidden',
-                  border: '1px solid #c8e6c9'
-                }}
-              >
-                <Box 
-                  sx={{ 
-                    background: 'linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%)',
-                    p: 2,
-                    borderBottom: '2px solid #4caf50'
-                  }}
-                >
-                  <Typography 
-                    variant="h6" 
-                    sx={{ 
-                      fontWeight: 600,
-                      color: '#2e7d32',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 1
-                    }}
-                  >
-                    <Box component="span" sx={{ fontSize: '1.5rem', lineHeight: 1 }}>✅</Box>
-                    {topic === 'left-factoring' ? 'Factored Grammar' : 'Grammar Without Left Recursion'}
-                  </Typography>
-                </Box>
-                <Box sx={{ p: 3, bgcolor: '#fafafa' }}>
+              {/* For First & Follow: Show tables */}
+              {topic === 'first-follow' && firstSets && followSets ? (
+                <>
+                  {/* FIRST Sets Table */}
                   <Paper 
-                    elevation={0}
+                    elevation={3} 
                     sx={{ 
-                      p: 2.5,
-                      bgcolor: '#ffffff',
-                      border: '1px solid #c8e6c9',
+                      mb: 3, 
                       borderRadius: 2,
-                      fontFamily: '"Fira Code", "Consolas", "Monaco", monospace'
+                      overflow: 'hidden',
+                      border: '1px solid #c8e6c9'
                     }}
                   >
-                    <Typography
-                      component="pre"
-                      sx={{
-                        whiteSpace: 'pre-wrap',
-                        fontFamily: 'inherit',
-                        fontSize: '0.95rem',
-                        lineHeight: 1.6,
-                        color: '#1b5e20',
-                        margin: 0,
-                        fontWeight: 500
+                    <Box 
+                      sx={{ 
+                        background: 'linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%)',
+                        p: 2,
+                        borderBottom: '2px solid #4caf50'
                       }}
                     >
-                      {transformedGrammar}
-                    </Typography>
+                      <Typography 
+                        variant="h6" 
+                        sx={{ 
+                          fontWeight: 600,
+                          color: '#2e7d32',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 1
+                        }}
+                      >
+                        <Box component="span" sx={{ fontSize: '1.5rem', lineHeight: 1 }}>✅</Box>
+                        FIRST Sets
+                      </Typography>
+                    </Box>
+                    <Box sx={{ p: 3, bgcolor: '#fafafa' }}>
+                      <Paper 
+                        elevation={0}
+                        sx={{ 
+                          p: 2.5,
+                          bgcolor: '#ffffff',
+                          border: '1px solid #c8e6c9',
+                          borderRadius: 2
+                        }}
+                      >
+                        {Object.entries(firstSets).map(([nt, set]) => (
+                          <Box key={nt} sx={{ mb: 1, fontFamily: 'monospace' }}>
+                            <strong>FIRST({nt})</strong> = {'{'} {Array.from(set).join(', ')} {'}'}
+                          </Box>
+                        ))}
+                      </Paper>
+                    </Box>
                   </Paper>
-                </Box>
-              </Paper>
 
-              {/* Elimination Steps Section */}
-              <Paper 
-                elevation={3} 
+                  {/* FOLLOW Sets Table */}
+                  <Paper 
+                    elevation={3} 
+                    sx={{ 
+                      mb: 3, 
+                      borderRadius: 2,
+                      overflow: 'hidden',
+                      border: '1px solid #e3f2fd'
+                    }}
+                  >
+                    <Box 
+                      sx={{ 
+                        background: 'linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%)',
+                        p: 2,
+                        borderBottom: '2px solid #2196f3'
+                      }}
+                    >
+                      <Typography 
+                        variant="h6" 
+                        sx={{ 
+                          fontWeight: 600,
+                          color: '#1565c0',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 1
+                        }}
+                      >
+                        <Box component="span" sx={{ fontSize: '1.5rem', lineHeight: 1 }}>✅</Box>
+                        FOLLOW Sets
+                      </Typography>
+                    </Box>
+                    <Box sx={{ p: 3, bgcolor: '#fafafa' }}>
+                      <Paper 
+                        elevation={0}
+                        sx={{ 
+                          p: 2.5,
+                          bgcolor: '#ffffff',
+                          border: '1px solid #bbdefb',
+                          borderRadius: 2
+                        }}
+                      >
+                        {Object.entries(followSets).map(([nt, set]) => (
+                          <Box key={nt} sx={{ mb: 1, fontFamily: 'monospace' }}>
+                            <strong>FOLLOW({nt})</strong> = {'{'} {Array.from(set).join(', ')} {'}'}
+                          </Box>
+                        ))}
+                      </Paper>
+                    </Box>
+                  </Paper>
+                </>
+              ) : (
+                /* For other topics: Show transformed grammar */
+                <Paper 
+                  elevation={3} 
+                  sx={{ 
+                    mb: 3, 
+                    borderRadius: 2,
+                    overflow: 'hidden',
+                    border: '1px solid #c8e6c9'
+                  }}
+                >
+                  <Box 
+                    sx={{ 
+                      background: 'linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%)',
+                      p: 2,
+                      borderBottom: '2px solid #4caf50'
+                    }}
+                  >
+                    <Typography 
+                      variant="h6" 
+                      sx={{ 
+                        fontWeight: 600,
+                        color: '#2e7d32',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 1
+                      }}
+                    >
+                      <Box component="span" sx={{ fontSize: '1.5rem', lineHeight: 1 }}>✅</Box>
+                      {topic === 'left-factoring' ? 'Factored Grammar' : 'Grammar Without Left Recursion'}
+                    </Typography>
+                  </Box>
+                  <Box sx={{ p: 3, bgcolor: '#fafafa' }}>
+                    <Paper 
+                      elevation={0}
+                      sx={{ 
+                        p: 2.5,
+                        bgcolor: '#ffffff',
+                        border: '1px solid #c8e6c9',
+                        borderRadius: 2,
+                        fontFamily: '"Fira Code", "Consolas", "Monaco", monospace'
+                      }}
+                    >
+                      <Typography
+                        component="pre"
+                        sx={{
+                          whiteSpace: 'pre-wrap',
+                          fontFamily: 'inherit',
+                          fontSize: '0.95rem',
+                          lineHeight: 1.6,
+                          color: '#1b5e20',
+                          margin: 0,
+                          fontWeight: 500
+                        }}
+                      >
+                        {transformedGrammar}
+                      </Typography>
+                    </Paper>
+                  </Box>
+                </Paper>
+              )}
+
+              {/* Elimination Steps Section - Only for non-first-follow */}
+              {topic !== 'first-follow' && steps.length > 0 && ( 
+                <Paper
+                  elevation={3} 
                 sx={{ 
                   borderRadius: 2,
                   overflow: 'hidden',
@@ -420,6 +555,7 @@ Note: Use ε or # for epsilon (empty string)`}
                   })()}
                 </Box>
               </Paper>
+              )}
             </>
           )}
         </CardContent>

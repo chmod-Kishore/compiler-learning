@@ -22,6 +22,8 @@ public class CompilerService {
     private final GrammarConversionService grammarConversionService;
     private final LeftFactoringService leftFactoringService;
     private final LexicalAnalysisService lexicalAnalysisService;
+    private final FirstFollowService firstFollowService;
+    private final com.compiler.learning.repository.FirstFollowProblemRepository firstFollowProblemRepository;
 
     public TheoryResponse getTheory(String topic) {
         if ("lexical".equalsIgnoreCase(topic)) {
@@ -30,6 +32,9 @@ public class CompilerService {
         } else if ("left-factoring".equalsIgnoreCase(topic)) {
             return new TheoryResponse("Left Factoring (Grammar Simplification)", 
                                     leftFactoringService.getTheory());
+        } else if ("first-follow".equalsIgnoreCase(topic)) {
+            return new TheoryResponse("FIRST and FOLLOW Sets", 
+                                    firstFollowService.getTheory());
         }
         // Default to syntax analysis (left recursion) theory
         return getSyntaxTheory();
@@ -186,6 +191,21 @@ When ε is a beta production, write A' instead of εA'.
                 leftFactoringService.performLeftFactoring(request.getGrammar());
 
         return new UniversalResponse(result.getTransformedGrammar(), result.getSteps());
+    }
+
+    public List<ProblemResponse> getFirstFollowProblems() {
+        List<com.compiler.learning.entity.FirstFollowProblem> problems = firstFollowProblemRepository.findAll();
+
+        return problems.stream()
+                .map(p -> {
+                    String combinedAnswer = "FIRST: " + p.getExpectedFirst() + "\nFOLLOW: " + p.getExpectedFollow();
+                    return new ProblemResponse(p.getId(), p.getQuestion(), combinedAnswer, p.getExplanation());
+                })
+                .collect(Collectors.toList());
+    }
+
+    public FirstFollowResponse generateFirstFollow(UniversalRequest request) {
+        return firstFollowService.computeFirstFollow(request.getGrammar());
     }
 
     private String normalizeAnswer(String answer) {

@@ -20,7 +20,7 @@ import {
   StepLabel
 } from '@mui/material';
 import { Help, Lightbulb, CheckCircle } from '@mui/icons-material';
-import { getHelp, getLeftFactoringHelp } from '../services/api';
+import { getHelp, getLeftFactoringHelp, getFirstFollowHelp } from '../services/api';
 
 const LEFT_RECURSION_STEPS = [
   { value: 1, label: 'Step 1: Identify the Type of Recursion' },
@@ -38,14 +38,63 @@ const LEFT_FACTORING_STEPS = [
   { value: 5, label: 'Step 5: Verify Final Grammar' }
 ];
 
+const FIRST_FOLLOW_STEPS = [
+  { value: 1, label: 'Step 1: Compute FIRST Sets' },
+  { value: 2, label: 'Step 2: Compute FOLLOW Sets' },
+  { value: 3, label: 'Step 3: Verify Results' }
+];
+
 function Helper({ topic = 'left-recursion' }) {
-  const STEPS = topic === 'left-factoring' ? LEFT_FACTORING_STEPS : LEFT_RECURSION_STEPS;
+  const STEPS = topic === 'left-factoring' ? LEFT_FACTORING_STEPS 
+              : topic === 'first-follow' ? FIRST_FOLLOW_STEPS
+              : LEFT_RECURSION_STEPS;
   const [inputGrammar, setInputGrammar] = useState('');
   const [stuckAtStep, setStuckAtStep] = useState('');
   const [studentWork, setStudentWork] = useState('');
   const [loading, setLoading] = useState(false);
   const [helpResponse, setHelpResponse] = useState(null);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'info' });
+
+  // FIRST/FOLLOW specific state
+  const [nonTerminals, setNonTerminals] = useState([]);
+  const [firstSets, setFirstSets] = useState({});
+  const [followSets, setFollowSets] = useState({});
+
+  // Extract non-terminals from grammar
+  const extractNonTerminals = (grammarText) => {
+    if (!grammarText) return [];
+    const nts = [];
+    const seen = new Set();
+    grammarText.split(/\r?\n/).forEach(line => {
+      const parts = line.split(/->|→/);
+      if (parts.length >= 2) {
+        const nt = parts[0].trim();
+        if (nt && !seen.has(nt)) {
+          nts.push(nt);
+          seen.add(nt);
+        }
+      }
+    });
+    return nts;
+  };
+
+  // Update non-terminals when grammar changes (for first-follow)
+  React.useEffect(() => {
+    if (topic === 'first-follow' && inputGrammar) {
+      const nts = extractNonTerminals(inputGrammar);
+      setNonTerminals(nts);
+      // Initialize empty sets for new non-terminals
+      const newFirst = {};
+      const newFollow = {};
+      nts.forEach(nt => {
+        newFirst[nt] = firstSets[nt] || '';
+        newFollow[nt] = followSets[nt] || '';
+      });
+      setFirstSets(newFirst);
+      setFollowSets(newFollow);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [inputGrammar, topic]);
 
   // Helper function to render text with bold markers (**text**)
   const renderFormattedText = (text) => {
@@ -101,15 +150,47 @@ function Helper({ topic = 'left-recursion' }) {
 
     setLoading(true);
     try {
+      let studentWorkText = studentWork.trim();
+
+      // For first-follow topic, build student work from input boxes
+      if (topic === 'first-follow') {
+        const step = parseInt(stuckAtStep);
+        const lines = [];
+        
+        // Add FIRST sets (for both step 1 and 2)
+        if (step >= 1) {
+          nonTerminals.forEach(nt => {
+            const firstValue = firstSets[nt] || '';
+            if (firstValue.trim()) {
+              lines.push(`FIRST(${nt}) = {${firstValue.trim()}}`);
+            }
+          });
+        }
+        
+        // Add FOLLOW sets (only for step 2)
+        if (step >= 2) {
+          nonTerminals.forEach(nt => {
+            const followValue = followSets[nt] || '';
+            if (followValue.trim()) {
+              lines.push(`FOLLOW(${nt}) = {${followValue.trim()}}`);
+            }
+          });
+        }
+        
+        studentWorkText = lines.join('\n');
+      }
+
       const helpRequest = {
         grammar: inputGrammar.trim(),
         stuckAtStep: parseInt(stuckAtStep),
-        studentWork: studentWork.trim()
+        studentWork: studentWorkText
       };
       
       // Use appropriate helper service based on topic
       const result = topic === 'left-factoring'
         ? await getLeftFactoringHelp(helpRequest)
+        : topic === 'first-follow'
+        ? await getFirstFollowHelp(helpRequest)
         : await getHelp(helpRequest);
       
       setHelpResponse(result);
@@ -126,6 +207,9 @@ function Helper({ topic = 'left-recursion' }) {
     setStuckAtStep('');
     setStudentWork('');
     setHelpResponse(null);
+    setFirstSets({});
+    setFollowSets({});
+    setNonTerminals([]);
   };
 
   return (
@@ -159,6 +243,7 @@ function Helper({ topic = 'left-recursion' }) {
           <Typography variant="body2" color="text.secondary" gutterBottom sx={{ mb: 3 }}>
             Tell us where you're stuck, and we'll help you identify mistakes and guide you to the solution
             {topic === 'left-factoring' && ' with left factoring'}
+            {topic === 'first-follow' && ' with FIRST and FOLLOW sets'}
           </Typography>
 
           {/* Input Grammar */}
@@ -167,8 +252,12 @@ function Helper({ topic = 'left-recursion' }) {
             multiline
             rows={4}
             variant="outlined"
-            label={topic === 'left-factoring' ? 'Original Grammar (with common prefixes)' : 'Original Grammar (LRG)'}
-            placeholder={topic === 'left-factoring'
+            label={topic === 'first-follow' ? 'Original Grammar' 
+                  : topic === 'left-factoring' ? 'Original Grammar (with common prefixes)' 
+                  : 'Original Grammar (LRG)'}
+            placeholder={topic === 'first-follow'
+              ? 'Enter the grammar for FIRST/FOLLOW computation...\nExample:\nE -> TE\'\nE\' -> +TE\' | ε\nT -> FT\'\nT\' -> *FT\' | ε\nF -> (E) | id'
+              : topic === 'left-factoring'
               ? 'Enter the original grammar with common prefixes...\nExample:\nS -> iEtS | iEtSeS | a'
               : 'Enter the original grammar with left recursion...\nExample:\nA -> Aab | c'}
             value={inputGrammar}
@@ -209,7 +298,9 @@ function Helper({ topic = 'left-recursion' }) {
           {/* Progress Stepper */}
           <Paper elevation={0} sx={{ p: 2, mb: 3, bgcolor: '#f5f5f5' }}>
             <Typography variant="subtitle2" gutterBottom sx={{ fontWeight: 600 }}>
-              {topic === 'left-factoring' ? 'Factoring Process:' : 'Elimination Process:'}
+              {topic === 'first-follow' ? 'Computation Process:' 
+                : topic === 'left-factoring' ? 'Factoring Process:' 
+                : 'Elimination Process:'}
             </Typography>
             <Stepper activeStep={stuckAtStep ? parseInt(stuckAtStep) - 1 : -1} alternativeLabel>
               {STEPS.map((step) => (
@@ -270,48 +361,106 @@ function Helper({ topic = 'left-recursion' }) {
             </Select>
           </FormControl>
 
-          {/* Student's Work */}
-          <TextField
-            fullWidth
-            multiline
-            rows={6}
-            variant="outlined"
-            label="Your Work So Far (Optional)"
-            placeholder="Enter what you've tried so far...&#10;This helps us give you better guidance"
-            value={studentWork}
-            onChange={(e) => setStudentWork(e.target.value)}
-            sx={{ 
-              mb: 3,
-              '& .MuiOutlinedInput-root': {
-                backgroundColor: '#ffffff',
-                borderRadius: 2,
-                fontSize: '0.95rem',
-                fontFamily: '"Fira Code", "Consolas", monospace',
-                transition: 'all 0.3s ease',
-                '& fieldset': {
-                  borderColor: '#e0e0e0',
-                  borderWidth: 2
+          {/* Student's Work - For non-first-follow topics */}
+          {topic !== 'first-follow' && (
+            <TextField
+              fullWidth
+              multiline
+              rows={6}
+              variant="outlined"
+              label="Your Work So Far (Optional)"
+              placeholder="Enter what you've tried so far...&#10;This helps us give you better guidance"
+              value={studentWork}
+              onChange={(e) => setStudentWork(e.target.value)}
+              sx={{ 
+                mb: 3,
+                '& .MuiOutlinedInput-root': {
+                  backgroundColor: '#ffffff',
+                  borderRadius: 2,
+                  fontSize: '0.95rem',
+                  fontFamily: '"Fira Code", "Consolas", monospace',
+                  transition: 'all 0.3s ease',
+                  '& fieldset': {
+                    borderColor: '#e0e0e0',
+                    borderWidth: 2
+                  },
+                  '&:hover fieldset': {
+                    borderColor: '#ff9800',
+                    borderWidth: 2
+                  },
+                  '&.Mui-focused fieldset': {
+                    borderColor: '#ff9800',
+                    borderWidth: 2,
+                    boxShadow: '0 0 0 3px rgba(255, 152, 0, 0.1)'
+                  }
                 },
-                '&:hover fieldset': {
-                  borderColor: '#ff9800',
-                  borderWidth: 2
-                },
-                '&.Mui-focused fieldset': {
-                  borderColor: '#ff9800',
-                  borderWidth: 2,
-                  boxShadow: '0 0 0 3px rgba(255, 152, 0, 0.1)'
+                '& .MuiInputLabel-root': {
+                  fontWeight: 600,
+                  color: '#666',
+                  '&.Mui-focused': {
+                    color: '#ff9800',
+                    fontWeight: 700
+                  }
                 }
-              },
-              '& .MuiInputLabel-root': {
-                fontWeight: 600,
-                color: '#666',
-                '&.Mui-focused': {
-                  color: '#ff9800',
-                  fontWeight: 700
-                }
-              }
-            }}
-          />
+              }}
+            />
+          )}
+
+          {/* FIRST/FOLLOW Input Boxes - For first-follow topic */}
+          {topic === 'first-follow' && stuckAtStep && nonTerminals.length > 0 && (
+            <Paper elevation={0} sx={{ p: 2.5, mb: 3, bgcolor: '#f9fafb', borderRadius: 2, border: '1px solid #e0e0e0' }}>
+              <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 0.5, color: '#374151' }}>
+                Enter your {parseInt(stuckAtStep) === 1 ? 'FIRST' : 'FIRST and FOLLOW'} sets
+              </Typography>
+              <Typography variant="caption" sx={{ color: '#6b7280', mb: 2, display: 'block' }}>
+                💡 Tip: Use <code style={{ backgroundColor: '#e5e7eb', padding: '2px 6px', borderRadius: '3px', fontWeight: 600 }}>#</code> for epsilon (ε)
+              </Typography>
+
+              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
+                {nonTerminals.map(nt => (
+                  <Paper key={nt} elevation={0} sx={{ p: 2, border: '1px solid #e5e7eb', borderRadius: 2, bgcolor: '#ffffff' }}>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1.5, color: '#111827' }}>
+                      Non-terminal: {nt}
+                    </Typography>
+                    
+                    {/* FIRST Set Input - Show for Step 1 and Step 2 */}
+                    {parseInt(stuckAtStep) >= 1 && (
+                      <TextField
+                        fullWidth
+                        size="small"
+                        label={`FIRST(${nt})`}
+                        placeholder="a, b, # (for ε)"
+                        value={firstSets[nt] || ''}
+                        onChange={(e) => setFirstSets({ ...firstSets, [nt]: e.target.value })}
+                        sx={{ mb: parseInt(stuckAtStep) >= 2 ? 1.5 : 0 }}
+                      />
+                    )}
+                    
+                    {/* FOLLOW Set Input - Show only for Step 2 */}
+                    {parseInt(stuckAtStep) >= 2 && (
+                      <TextField
+                        fullWidth
+                        size="small"
+                        label={`FOLLOW(${nt})`}
+                        placeholder="$, a, b"
+                        value={followSets[nt] || ''}
+                        onChange={(e) => setFollowSets({ ...followSets, [nt]: e.target.value })}
+                      />
+                    )}
+                  </Paper>
+                ))}
+              </Box>
+            </Paper>
+          )}
+
+          {/* Message when grammar not entered yet for first-follow */}
+          {topic === 'first-follow' && stuckAtStep && nonTerminals.length === 0 && (
+            <Paper elevation={0} sx={{ p: 3, mb: 3, bgcolor: '#fff3cd', borderRadius: 2, border: '1px solid #ffc107' }}>
+              <Typography variant="body2" sx={{ color: '#856404' }}>
+                ⚠️ Please enter the grammar above to see the input boxes for FIRST and FOLLOW sets.
+              </Typography>
+            </Paper>
+          )}
 
           {/* Action Buttons */}
           <Box display="flex" gap={2} mb={3}>

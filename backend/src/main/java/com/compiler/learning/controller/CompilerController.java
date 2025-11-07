@@ -21,6 +21,7 @@ public class CompilerController {
     private final LexicalSubsectionService lexicalSubsectionService;
     private final HelperService helperService;
     private final LeftFactoringHelperService leftFactoringHelperService;
+    private final com.compiler.learning.service.FirstFollowHelperService firstFollowHelperService;
 
     @GetMapping("/theory")
     public ResponseEntity<TheoryResponse> getTheory(@RequestParam(required = false, defaultValue = "syntax") String topic) {
@@ -71,5 +72,21 @@ public class CompilerController {
     @PostMapping("/left-factoring/helper")
     public ResponseEntity<HelpResponse> getLeftFactoringHelp(@RequestBody HelpRequest request) {
         return ResponseEntity.ok(leftFactoringHelperService.getHelp(request));
+    }
+
+    // First and Follow Endpoints
+    @GetMapping("/first-follow/problems")
+    public ResponseEntity<List<ProblemResponse>> getFirstFollowProblems() {
+        return ResponseEntity.ok(compilerService.getFirstFollowProblems());
+    }
+
+    @PostMapping("/first-follow/generate")
+    public ResponseEntity<FirstFollowResponse> generateFirstFollow(@RequestBody UniversalRequest request) {
+        return ResponseEntity.ok(compilerService.generateFirstFollow(request));
+    }
+
+    @PostMapping("/first-follow/helper")
+    public ResponseEntity<HelpResponse> getFirstFollowHelp(@RequestBody HelpRequest request) {
+        return ResponseEntity.ok(firstFollowHelperService.getHelp(request));
     }
 }

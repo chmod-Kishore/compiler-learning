@@ -26,7 +26,8 @@ import Helper from './Helper';
 
 const subsections = [
   { id: 'left-recursion', title: 'Left Recursion Elimination', topics: ['LRG → RRG'] },
-  { id: 'left-factoring', title: 'Left Factoring', topics: ['Grammar Simplification'] }
+  { id: 'left-factoring', title: 'Left Factoring', topics: ['Grammar Simplification'] },
+  { id: 'first-follow', title: 'First & Follow Sets', topics: ['LL(1) Parser Foundation'] }
 ];
 
 function SyntaxAnalysis() {
@@ -220,7 +221,11 @@ function SyntaxAnalysis() {
               {/* Tab Content */}
               <Box sx={{ p: 0, bgcolor: '#fafafa', minHeight: '70vh' }}>
                 {activeTab === 0 && (
-                  <Theory topic={selectedSubsection === 'left-recursion' ? 'syntax' : 'left-factoring'} />
+                  <Theory topic={
+                    selectedSubsection === 'left-recursion' ? 'syntax' : 
+                    selectedSubsection === 'left-factoring' ? 'left-factoring' : 
+                    'first-follow'
+                  } />
                 )}
                 {activeTab === 1 && (
                   <Problems topic={selectedSubsection} />

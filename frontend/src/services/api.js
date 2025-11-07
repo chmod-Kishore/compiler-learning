@@ -73,4 +73,27 @@ export const getLeftFactoringHelp = async (helpRequest) => {
   return response.data;
 };
 
+// First and Follow API Functions
+export const getFirstFollowProblems = async () => {
+  const response = await api.get('/first-follow/problems');
+  return response.data;
+};
+
+export const generateFirstFollow = async (grammar) => {
+  const response = await api.post('/first-follow/generate', {
+    grammar,
+  });
+  return response.data;
+};
+
+export const checkFirstFollowAnswer = async (request) => {
+  const response = await api.post('/first-follow/helper', request);
+  return response.data;
+};
+
+export const getFirstFollowHelp = async (helpRequest) => {
+  const response = await api.post('/first-follow/helper', helpRequest);
+  return response.data;
+};
+
 export default api;
