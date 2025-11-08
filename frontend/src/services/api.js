@@ -149,4 +149,10 @@ export const validateGrammar = async (grammar) => {
   return response.data;
 };
 
+// LL(1) Helper API Functions
+export const analyzeParsingState = async (request) => {
+  const response = await api.post('/ll1-helper/analyze', request);
+  return response.data;
+};
+
 export default api;

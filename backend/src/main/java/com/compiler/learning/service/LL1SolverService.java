@@ -108,8 +108,10 @@ public class LL1SolverService {
                 result.add(EPSILON);
                 break;
             } else if (!nonTerminals.contains(symbol)) {
-                // Terminal
-                result.add(symbol);
+                // Terminal - only add the first character for single-char terminal mode
+                if (symbol.length() > 0) {
+                    result.add(String.valueOf(symbol.charAt(0)));
+                }
                 break;
             } else {
                 // Non-terminal
@@ -322,20 +324,13 @@ public class LL1SolverService {
             Map<String, Map<String, String>> parseTable = tableResponse.getParseTable();
             String startSymbol = tableResponse.getNonTerminals().get(0);
             
-            // Tokenize input and add $
-            List<String> inputTokens = new ArrayList<>();
-            String trimmedInput = inputString.trim();
+            // Parse grammar to get terminals for smart tokenization
+            Map<String, List<List<String>>> grammar = parseGrammar(grammarText);
+            Set<String> terminals = extractTerminals(grammar);
+            Set<String> grammarNonTerminals = grammar.keySet();
             
-            if (trimmedInput.contains(" ")) {
-                // Input has spaces, split by whitespace
-                inputTokens.addAll(Arrays.asList(trimmedInput.split("\\s+")));
-            } else {
-                // Input has no spaces, split into individual characters
-                for (char c : trimmedInput.toCharArray()) {
-                    inputTokens.add(String.valueOf(c));
-                }
-            }
-            
+            // Tokenize input using smart tokenization
+            List<String> inputTokens = tokenizeInput(inputString.trim(), terminals, grammarNonTerminals);
             inputTokens.add(END_MARKER);
             
             // Initialize stack with start symbol and $
@@ -516,5 +511,46 @@ public class LL1SolverService {
             "",
             null
         );
+    }
+    
+    /**
+     * Tokenization that treats non-terminals as complete units and terminals as single characters
+     */
+    private List<String> tokenizeInput(String input, Set<String> terminals, Set<String> nonTerminals) {
+        input = input.trim();
+        
+        // If input contains spaces, split by spaces
+        if (input.contains(" ")) {
+            return Arrays.asList(input.split("\\s+"));
+        }
+        
+        // For concatenated input, use longest match for non-terminals, single chars for terminals
+        List<String> tokens = new ArrayList<>();
+        int i = 0;
+        
+        while (i < input.length()) {
+            boolean matched = false;
+            
+            // Try to match non-terminals first (sorted by length descending to match longest first)
+            List<String> sortedNonTerminals = new ArrayList<>(nonTerminals);
+            sortedNonTerminals.sort((a, b) -> b.length() - a.length());
+            
+            for (String nonTerminal : sortedNonTerminals) {
+                if (input.startsWith(nonTerminal, i)) {
+                    tokens.add(nonTerminal);
+                    i += nonTerminal.length();
+                    matched = true;
+                    break;
+                }
+            }
+            
+            // If no non-terminal matched, treat as single-character terminal
+            if (!matched) {
+                tokens.add(String.valueOf(input.charAt(i)));
+                i++;
+            }
+        }
+        
+        return tokens;
     }
 }
