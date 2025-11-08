@@ -564,7 +564,7 @@ State 7 →ε→ State 8 (connect (a|b)* to c)</pre>
     
     private Subsection createSubsection14() {
         return new Subsection("1.4", "DFA Minimization (Partition Refinement)",
-            new SubsectionContent(getSubsection14Concept(), getSubsection14Example(), getSubsection14DoubtClearer()));
+            new SubsectionContent(getSubsection14Concept(), "", ""));
     }
     
     private Subsection createSubsection15() {
@@ -629,35 +629,6 @@ State 7 →ε→ State 8 (connect (a|b)* to c)</pre>
                 <li><strong>Step 3:</strong> Repeat until no splits</li>
                 <li><strong>Step 4:</strong> Each partition → one state</li>
             </ol>
-            """;
-    }
-    
-    private String getSubsection14Example() {
-        return """
-            <h3>📝 Problem: Minimize DFA</h3>
-            <p><strong>Initial:</strong> P₀={D}, P₁={A,B,C}</p>
-            <p><strong>Check P₁:</strong> All have signature (1,1,0) - no split!</p>
-            <p><strong>Result:</strong> Merge A,B,C into Q₀</p>
-            <table border="1" style="width:100%;margin:15px 0;">
-              <tr style="background:#f5f5f5;"><th>State</th><th>a</th><th>b</th><th>c</th></tr>
-              <tr><td>→Q₀</td><td>Q₀</td><td>Q₀</td><td>Q₁</td></tr>
-              <tr><td>*Q₁</td><td>-</td><td>-</td><td>-</td></tr>
-            </table>
-            <p style="color:#2e7d32;"><strong>✅ Minimized: 4 states → 2 states!</strong></p>
-            """;
-    }
-    
-    private String getSubsection14DoubtClearer() {
-        return """
-            <h3>💡 Doubt Clearer</h3>
-            <div style="background:#fff3e0;padding:15px;border-left:4px solid #ff9800;margin:15px 0;">
-                <p><strong>Q: What is equivalence?</strong></p>
-                <p>A: States are equivalent if automaton behaves identically from those states for all inputs.</p>
-                <p><strong>Q: Why separate finals first?</strong></p>
-                <p>A: Final and non-final states fundamentally different (accept vs reject).</p>
-                <p><strong>Q: When to stop?</strong></p>
-                <p>A: When iteration produces no new splits.</p>
-            </div>
             """;
     }
     
