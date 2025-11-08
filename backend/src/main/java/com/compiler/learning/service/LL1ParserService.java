@@ -381,8 +381,25 @@ public class LL1ParserService {
     
     private String normalizeString(String str) {
         if (str == null) return "";
-        return str.trim()
-            .replaceAll("\\s+", " ")
-            .toLowerCase();
+        // Apply same normalization as productions: arrows, epsilon, and remove all spaces
+        String normalized = str.trim()
+            .replace("->", "→")
+            .replace("=>", "→")
+            .replace("u2192", "→")
+            .replace("\u2192", "→");
+        
+        // Normalize epsilon representations
+        normalized = normalized.replaceAll("\\bepsilon\\b", "ε")
+                              .replaceAll("\\b#\\b", "ε")
+                              .replaceAll("(?<=\\s)#(?=\\s|$)", "ε")
+                              .replaceAll("(?<=→\\s?)#(?=\\s|$)", "ε")
+                              .replace(" # ", " ε ")
+                              .replace("→#", "→ε")
+                              .replace("→ #", "→ε");
+        
+        // Remove all spaces for comparison
+        normalized = normalized.replaceAll("\\s+", "");
+        
+        return normalized.toLowerCase();
     }
 }
