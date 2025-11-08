@@ -24,6 +24,7 @@ import Problems from './Problems';
 import Universal from './Universal';
 import Helper from './Helper';
 import LL1ParserProblems from './LL1ParserProblems';
+import Solver from './Solver';
 
 const subsections = [
   { id: 'left-recursion', title: 'Left Recursion Elimination', topics: ['LRG → RRG'] },
@@ -238,7 +239,11 @@ function SyntaxAnalysis() {
                   )
                 )}
                 {activeTab === 2 && (
-                  <Universal topic={selectedSubsection} />
+                  selectedSubsection === 'll1-parser' ? (
+                    <Solver />
+                  ) : (
+                    <Universal topic={selectedSubsection} />
+                  )
                 )}
                 {activeTab === 3 && (
                   <Helper topic={selectedSubsection} />

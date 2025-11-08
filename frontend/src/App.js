@@ -9,6 +9,7 @@ import SyntaxAnalysis from './components/SyntaxAnalysis';
 import SemanticAnalysis from './components/SemanticAnalysis';
 import IntermediateCode from './components/IntermediateCode';
 import SubsectionTheory from './components/SubsectionTheory';
+import Solver from './components/Solver';
 
 const theme = createTheme({
   palette: {
@@ -41,6 +42,7 @@ function App() {
           <Route path="/syntax" element={<SyntaxAnalysis />} />
           <Route path="/semantic" element={<SemanticAnalysis />} />
           <Route path="/intermediate" element={<IntermediateCode />} />
+          <Route path="/solver" element={<Solver />} />
           <Route path="/lexical/subsection/:id" element={<SubsectionTheory />} />
         </Routes>
       </Router>

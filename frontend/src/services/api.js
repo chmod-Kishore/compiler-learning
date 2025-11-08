@@ -126,4 +126,27 @@ export const identifyConflict = async (submission) => {
   return response.data;
 };
 
+// LL(1) Solver API Functions
+export const generateParseTable = async (grammar) => {
+  const response = await api.post('/ll1-solver/generate-table', {
+    grammar,
+  });
+  return response.data;
+};
+
+export const runParser = async (grammar, inputString) => {
+  const response = await api.post('/ll1-solver/run-parser', {
+    grammar,
+    inputString,
+  });
+  return response.data;
+};
+
+export const validateGrammar = async (grammar) => {
+  const response = await api.post('/ll1-solver/validate-grammar', {
+    grammar,
+  });
+  return response.data;
+};
+
 export default api;

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Box,
   Paper,
@@ -45,10 +45,14 @@ const ParsingSimulator = ({ problem }) => {
   const expectedTable = problem.expectedTable ? JSON.parse(problem.expectedTable) : {};
   const hints = problem.hints ? JSON.parse(problem.hints) : [];
   const inputString = problem.inputString || '';
+  
+  const nonTerminals = useMemo(() => 
+    problem.nonTerminals ? JSON.parse(problem.nonTerminals) : [], 
+    [problem.nonTerminals]
+  );
 
   // Initialize with first step and reset state when problem changes
   useEffect(() => {
-    const nonTerminals = problem.nonTerminals ? JSON.parse(problem.nonTerminals) : [];
     const startSymbol = nonTerminals[0] || 'S';
     setSteps([{
       step: 1,
@@ -62,7 +66,7 @@ const ParsingSimulator = ({ problem }) => {
     setAttempted(false);
     setShowHints(false);
     setLoading(false);
-  }, [problem.id, problem.problemNumber, inputString]);
+  }, [problem.id, problem.problemNumber, nonTerminals, inputString]);
 
   const handleStepChange = (index, field, value) => {
     const newSteps = [...steps];

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Box,
   Paper,
@@ -37,8 +37,14 @@ const ParseTableEditor = ({ problem }) => {
   const [attempted, setAttempted] = useState(false);
   const [showHints, setShowHints] = useState(false);
 
-  const terminals = problem.terminals ? JSON.parse(problem.terminals) : [];
-  const nonTerminals = problem.nonTerminals ? JSON.parse(problem.nonTerminals) : [];
+  const terminals = useMemo(() => 
+    problem.terminals ? JSON.parse(problem.terminals) : [], 
+    [problem.terminals]
+  );
+  const nonTerminals = useMemo(() => 
+    problem.nonTerminals ? JSON.parse(problem.nonTerminals) : [], 
+    [problem.nonTerminals]
+  );
   const grammar = problem.grammar ? JSON.parse(problem.grammar) : [];
   const hints = problem.hints ? JSON.parse(problem.hints) : [];
 
@@ -57,7 +63,7 @@ const ParseTableEditor = ({ problem }) => {
     setShowSolution(false);
     setAttempted(false);
     setShowHints(false);
-  }, [problem.id, problem.problemNumber]);
+  }, [problem.id, problem.problemNumber, nonTerminals, terminals]);
 
   const handleCellChange = (nonTerminal, terminal, value) => {
     setUserTable(prev => ({
