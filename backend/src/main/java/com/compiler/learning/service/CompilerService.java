@@ -23,6 +23,7 @@ public class CompilerService {
     private final LeftFactoringService leftFactoringService;
     private final LexicalAnalysisService lexicalAnalysisService;
     private final FirstFollowService firstFollowService;
+    private final LL1ParserService ll1ParserService;
     private final com.compiler.learning.repository.FirstFollowProblemRepository firstFollowProblemRepository;
 
     public TheoryResponse getTheory(String topic) {
@@ -35,6 +36,9 @@ public class CompilerService {
         } else if ("first-follow".equalsIgnoreCase(topic)) {
             return new TheoryResponse("FIRST and FOLLOW Sets", 
                                     firstFollowService.getTheory());
+        } else if ("ll1-parser".equalsIgnoreCase(topic)) {
+            return new TheoryResponse("LL(1) Parser", 
+                                    ll1ParserService.getTheory());
         }
         // Default to syntax analysis (left recursion) theory
         return getSyntaxTheory();

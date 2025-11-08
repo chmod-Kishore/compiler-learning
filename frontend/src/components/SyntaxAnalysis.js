@@ -23,11 +23,13 @@ import Theory from './Theory';
 import Problems from './Problems';
 import Universal from './Universal';
 import Helper from './Helper';
+import LL1ParserProblems from './LL1ParserProblems';
 
 const subsections = [
   { id: 'left-recursion', title: 'Left Recursion Elimination', topics: ['LRG → RRG'] },
   { id: 'left-factoring', title: 'Left Factoring', topics: ['Grammar Simplification'] },
-  { id: 'first-follow', title: 'First & Follow Sets', topics: ['LL(1) Parser Foundation'] }
+  { id: 'first-follow', title: 'First & Follow Sets', topics: ['LL(1) Parser Foundation'] },
+  { id: 'll1-parser', title: 'LL(1) Parser', topics: ['Predictive Parsing'] }
 ];
 
 function SyntaxAnalysis() {
@@ -224,11 +226,16 @@ function SyntaxAnalysis() {
                   <Theory topic={
                     selectedSubsection === 'left-recursion' ? 'syntax' : 
                     selectedSubsection === 'left-factoring' ? 'left-factoring' : 
+                    selectedSubsection === 'll1-parser' ? 'll1-parser' :
                     'first-follow'
                   } />
                 )}
                 {activeTab === 1 && (
-                  <Problems topic={selectedSubsection} />
+                  selectedSubsection === 'll1-parser' ? (
+                    <LL1ParserProblems />
+                  ) : (
+                    <Problems topic={selectedSubsection} />
+                  )
                 )}
                 {activeTab === 2 && (
                   <Universal topic={selectedSubsection} />

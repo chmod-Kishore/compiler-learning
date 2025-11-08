@@ -2,7 +2,9 @@
 package com.compiler.learning.controller;
 
 import com.compiler.learning.dto.*;
+import com.compiler.learning.entity.LL1ParserProblem;
 import com.compiler.learning.service.CompilerService;
+import com.compiler.learning.service.LL1ParserService;
 import com.compiler.learning.service.LexicalSubsectionService;
 import com.compiler.learning.service.HelperService;
 import com.compiler.learning.service.LeftFactoringHelperService;
@@ -22,6 +24,7 @@ public class CompilerController {
     private final HelperService helperService;
     private final LeftFactoringHelperService leftFactoringHelperService;
     private final com.compiler.learning.service.FirstFollowHelperService firstFollowHelperService;
+    private final LL1ParserService ll1ParserService;
 
     @GetMapping("/theory")
     public ResponseEntity<TheoryResponse> getTheory(@RequestParam(required = false, defaultValue = "syntax") String topic) {
@@ -88,5 +91,36 @@ public class CompilerController {
     @PostMapping("/first-follow/helper")
     public ResponseEntity<HelpResponse> getFirstFollowHelp(@RequestBody HelpRequest request) {
         return ResponseEntity.ok(firstFollowHelperService.getHelp(request));
+    }
+    
+    // LL(1) Parser Endpoints
+    @GetMapping("/ll1-parser/problems")
+    public ResponseEntity<List<LL1ParserProblem>> getLL1ParserProblems(@RequestParam Integer level) {
+        return ResponseEntity.ok(ll1ParserService.getProblemsByLevel(level));
+    }
+    
+    @GetMapping("/ll1-parser/problem")
+    public ResponseEntity<LL1ParserProblem> getLL1ParserProblem(
+            @RequestParam Integer level, 
+            @RequestParam Integer problemNumber) {
+        return ResponseEntity.ok(ll1ParserService.getProblem(level, problemNumber));
+    }
+    
+    @PostMapping("/ll1-parser/validate-table")
+    public ResponseEntity<ParseTableValidationResponse> validateParseTable(
+            @RequestBody ParseTableSubmission submission) {
+        return ResponseEntity.ok(ll1ParserService.validateParseTable(submission));
+    }
+    
+    @PostMapping("/ll1-parser/validate-parsing")
+    public ResponseEntity<ParsingStepsValidationResponse> validateParsingSteps(
+            @RequestBody ParsingStepsSubmission submission) {
+        return ResponseEntity.ok(ll1ParserService.validateParsingSteps(submission));
+    }
+    
+    @PostMapping("/ll1-parser/identify-conflict")
+    public ResponseEntity<ConflictIdentificationResponse> identifyConflict(
+            @RequestBody ConflictIdentificationSubmission submission) {
+        return ResponseEntity.ok(ll1ParserService.identifyConflict(submission));
     }
 }

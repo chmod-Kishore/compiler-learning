@@ -96,4 +96,34 @@ export const getFirstFollowHelp = async (helpRequest) => {
   return response.data;
 };
 
+// LL(1) Parser API Functions
+export const getLL1ParserProblems = async (level) => {
+  const response = await api.get('/ll1-parser/problems', {
+    params: { level }
+  });
+  return response.data;
+};
+
+export const getLL1ParserProblem = async (level, problemNumber) => {
+  const response = await api.get('/ll1-parser/problem', {
+    params: { level, problemNumber }
+  });
+  return response.data;
+};
+
+export const validateParseTable = async (submission) => {
+  const response = await api.post('/ll1-parser/validate-table', submission);
+  return response.data;
+};
+
+export const validateParsingSteps = async (submission) => {
+  const response = await api.post('/ll1-parser/validate-parsing', submission);
+  return response.data;
+};
+
+export const identifyConflict = async (submission) => {
+  const response = await api.post('/ll1-parser/identify-conflict', submission);
+  return response.data;
+};
+
 export default api;
