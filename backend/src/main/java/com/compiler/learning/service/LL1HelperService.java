@@ -59,17 +59,20 @@ public class LL1HelperService {
             String topSymbol = stackTokens.get(0);
             String lookahead = inputTokens.get(0);
             
-            // Skip validation for single-character symbols (all single chars are valid terminals)
-            // Only validate multi-character symbols must be non-terminals
-            if (topSymbol.length() > 1 && !topSymbol.equals(END_MARKER) && !nonTerminals.contains(topSymbol)) {
+            // Validate multi-character symbols
+            // Multi-character symbols can be either non-terminals or multi-char terminals (like "id")
+            if (topSymbol.length() > 1 && !topSymbol.equals(END_MARKER) && 
+                !nonTerminals.contains(topSymbol) && !terminals.contains(topSymbol)) {
                 return createErrorResponse("Invalid symbol '" + topSymbol + "' on stack.\n\n" +
-                    "Multi-character symbols must be non-terminals.\n" +
-                    "Valid non-terminals: " + String.join(", ", nonTerminals));
+                    "Valid non-terminals: " + String.join(", ", nonTerminals) + "\n" +
+                    "Valid terminals: " + String.join(", ", terminals));
             }
             
-            if (lookahead.length() > 1 && !lookahead.equals(END_MARKER)) {
+            if (lookahead.length() > 1 && !lookahead.equals(END_MARKER) && 
+                !nonTerminals.contains(lookahead) && !terminals.contains(lookahead)) {
                 return createErrorResponse("Invalid input symbol '" + lookahead + "'.\n\n" +
-                    "Multi-character symbols are not allowed in input (only single-character terminals).");
+                    "Valid non-terminals: " + String.join(", ", nonTerminals) + "\n" +
+                    "Valid terminals: " + String.join(", ", terminals));
             }
             
             // Check if parsing is complete
@@ -565,9 +568,9 @@ public class LL1HelperService {
     private List<String> tokenizeInput(String input, Set<String> terminals, Set<String> nonTerminals) {
         input = input.trim();
         
-        // If input contains spaces, split by spaces
+        // If input contains spaces, split by spaces (return mutable list)
         if (input.contains(" ")) {
-            return Arrays.asList(input.split("\\s+"));
+            return new ArrayList<>(Arrays.asList(input.split("\\s+")));
         }
         
         // For concatenated input, use longest match for non-terminals, single chars for terminals
