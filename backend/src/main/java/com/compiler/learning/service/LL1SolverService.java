@@ -108,10 +108,8 @@ public class LL1SolverService {
                 result.add(EPSILON);
                 break;
             } else if (!nonTerminals.contains(symbol)) {
-                // Terminal - only add the first character for single-char terminal mode
-                if (symbol.length() > 0) {
-                    result.add(String.valueOf(symbol.charAt(0)));
-                }
+                // Terminal - add the complete terminal symbol
+                result.add(symbol);
                 break;
             } else {
                 // Non-terminal
@@ -433,7 +431,33 @@ public class LL1SolverService {
                     }
                     
                     String production = row.get(currentInput);
+                    
+                    // Check if production is null
+                    if (production == null || production.trim().isEmpty()) {
+                        steps.add(new ParseSimulationResponse.ParseStep(
+                            stepNumber++,
+                            stackStr,
+                            inputStr,
+                            "Error",
+                            "No rule for " + top + " under '" + currentInput + "'"
+                        ));
+                        return new ParseSimulationResponse(
+                            steps,
+                            false,
+                            "❌ Error: Parse table has null entry for [" + top + ", " + currentInput + "]",
+                            String.join(" ⇒ ", derivation),
+                            root
+                        );
+                    }
+                    
                     String[] prodParts = production.split("→");
+                    if (prodParts.length < 2) {
+                        // Try with -> instead
+                        prodParts = production.split("->");
+                        if (prodParts.length < 2) {
+                            return createParseErrorResponse("Invalid production format: " + production);
+                        }
+                    }
                     String[] rightSide = prodParts[1].trim().split("\\s+");
                     
                     steps.add(new ParseSimulationResponse.ParseStep(
@@ -478,7 +502,9 @@ public class LL1SolverService {
             return createParseErrorResponse("Unexpected end of parsing");
             
         } catch (Exception e) {
-            return createParseErrorResponse("Error during parsing: " + e.getMessage());
+            e.printStackTrace(); // Log the full stack trace
+            String errorMsg = e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName();
+            return createParseErrorResponse("Error during parsing: " + errorMsg + ". Check grammar and input format.");
         }
     }
     
@@ -519,9 +545,9 @@ public class LL1SolverService {
     private List<String> tokenizeInput(String input, Set<String> terminals, Set<String> nonTerminals) {
         input = input.trim();
         
-        // If input contains spaces, split by spaces
+        // If input contains spaces, split by spaces (return mutable list)
         if (input.contains(" ")) {
-            return Arrays.asList(input.split("\\s+"));
+            return new ArrayList<>(Arrays.asList(input.split("\\s+")));
         }
         
         // For concatenated input, use longest match for non-terminals, single chars for terminals
