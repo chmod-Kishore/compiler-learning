@@ -1,54 +1,94 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
+// src/components/SemanticAnalysis.js
+import React, { useState } from 'react';
 import {
   Container,
   Box,
   Typography,
   IconButton,
   Paper,
-  Grid,
-  Card,
-  CardContent,
-  Chip,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemText,
+  Tab,
+  Tabs,
+  Divider,
+  Chip
 } from '@mui/material';
-import { ArrowBack, Analytics } from '@mui/icons-material';
+import { ArrowBack } from '@mui/icons-material';
 
-const topics = [
-  {
-    title: 'Annotated Parse Tree',
-    description: 'Build parse trees with semantic annotations and attributes',
-    status: 'Coming Soon',
+// Import components for each tab
+import SemanticTheory from './SemanticTheory';
+import SemanticPracticeInteractive from './SemanticPracticeInteractive';
+import SemanticSolverTopicSpecific from './SemanticSolverTopicSpecific';
+import SemanticHelperIntelligent from './SemanticHelperIntelligent';
+
+const subsections = [
+  { 
+    id: '3.1', 
+    title: 'Type Checking', 
+    topics: ['Type Systems', 'Type Rules'], 
+    topicKey: 'type-checking' 
   },
-  {
-    title: 'Dependency Graph',
-    description: 'Analyze dependencies between semantic attributes',
-    status: 'Coming Soon',
+  { 
+    id: '3.2', 
+    title: 'Syntax-Directed Translation', 
+    topics: ['SDT Schemes', 'Translation Rules'], 
+    topicKey: 'sdt' 
   },
-  {
-    title: 'Syntax Tree',
-    description: 'Construct abstract and concrete syntax trees',
-    status: 'Coming Soon',
+  { 
+    id: '3.3', 
+    title: 'Attribute Grammars', 
+    topics: ['Synthesized', 'Inherited'], 
+    topicKey: 'attributes' 
   },
+  { 
+    id: '3.4', 
+    title: 'Symbol Table', 
+    topics: ['Scope', 'Declarations'], 
+    topicKey: 'symbol-table' 
+  },
+  { 
+    id: '3.5', 
+    title: 'Semantic Actions', 
+    topics: ['Action Routines', 'Error Recovery'], 
+    topicKey: 'semantic-actions' 
+  }
 ];
 
 function SemanticAnalysis() {
-  const navigate = useNavigate();
+  const [selectedSubsection, setSelectedSubsection] = useState('3.1');
+  const [activeTab, setActiveTab] = useState(0);
+
+  const handleSubsectionChange = (subsectionId) => {
+    setSelectedSubsection(subsectionId);
+    setActiveTab(0);
+  };
+
+  const handleTabChange = (event, newValue) => {
+    setActiveTab(newValue);
+  };
+
+  const handleBack = () => {
+    // Navigate back to main page
+    window.history.back();
+  };
 
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: '#f5f5f5' }}>
       {/* Header */}
       <Box
         sx={{
-          background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+          background: 'linear-gradient(135deg, #00acc1 0%, #00838f 100%)',
           color: 'white',
           py: 3,
           boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
         }}
       >
-        <Container maxWidth="lg">
+        <Container maxWidth="xl">
           <Box display="flex" alignItems="center" gap={2}>
             <IconButton
-              onClick={() => navigate('/')}
+              onClick={handleBack}
               sx={{
                 color: 'white',
                 '&:hover': { bgcolor: 'rgba(255,255,255,0.1)' },
@@ -60,7 +100,7 @@ function SemanticAnalysis() {
               <Typography variant="h4" fontWeight={600}>
                 Semantic Analysis
               </Typography>
-              <Typography variant="body2" sx={{ opacity: 0.9 }}>
+              <Typography variant="body2" sx={{ opacity: 0.9, mt: 0.5 }}>
                 Phase 3: Type Checking & Semantic Validation
               </Typography>
             </Box>
@@ -68,62 +108,156 @@ function SemanticAnalysis() {
         </Container>
       </Box>
 
-      {/* Content */}
-      <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-        <Paper
-          elevation={0}
-          sx={{
-            borderRadius: 3,
-            p: 4,
-            boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
-          }}
-        >
-          <Box textAlign="center" mb={4}>
-            <Analytics sx={{ fontSize: 60, color: '#4facfe', mb: 2 }} />
-            <Typography variant="h5" gutterBottom fontWeight={600}>
-              Semantic Analysis Tools
-            </Typography>
-            <Typography variant="body1" color="text.secondary">
-              Understand semantic rules, type checking, and attribute grammars
-            </Typography>
-          </Box>
+      {/* Main Content */}
+      <Container maxWidth="xl" sx={{ mt: 3, mb: 4 }}>
+        <Box display="flex" gap={3}>
+          {/* Left Sidebar - Subsections */}
+          <Paper 
+            elevation={2} 
+            sx={{ 
+              width: 280, 
+              flexShrink: 0,
+              borderRadius: 2,
+              overflow: 'hidden',
+              height: 'fit-content',
+              position: 'sticky',
+              top: 20
+            }}
+          >
+            <Box 
+              sx={{ 
+                background: 'linear-gradient(135deg, #00acc1 0%, #00838f 100%)',
+                p: 2,
+                color: 'white'
+              }}
+            >
+              <Typography variant="h6" fontWeight={700}>
+                Topics
+              </Typography>
+            </Box>
+            <List sx={{ p: 0 }}>
+              {subsections.map((subsection, index) => (
+                <React.Fragment key={subsection.id}>
+                  {index > 0 && <Divider />}
+                  <ListItem disablePadding>
+                    <ListItemButton
+                      selected={selectedSubsection === subsection.id}
+                      onClick={() => handleSubsectionChange(subsection.id)}
+                      sx={{
+                        py: 2,
+                        px: 2.5,
+                        '&.Mui-selected': {
+                          backgroundColor: 'rgba(0, 172, 193, 0.15)',
+                          borderLeft: '4px solid #00acc1',
+                          '&:hover': {
+                            backgroundColor: 'rgba(0, 172, 193, 0.25)',
+                          }
+                        },
+                        '&:hover': {
+                          backgroundColor: 'rgba(0, 172, 193, 0.08)',
+                        }
+                      }}
+                    >
+                      <ListItemText 
+                        primary={
+                          <Typography 
+                            fontWeight={selectedSubsection === subsection.id ? 700 : 500}
+                            sx={{ 
+                              color: selectedSubsection === subsection.id ? '#00acc1' : 'text.primary',
+                              fontSize: '0.95rem'
+                            }}
+                          >
+                            {subsection.title}
+                          </Typography>
+                        }
+                        secondary={
+                          <Box sx={{ mt: 0.5, display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                            {subsection.topics.map((topic, idx) => (
+                              <Chip 
+                                key={idx}
+                                label={topic}
+                                size="small"
+                                sx={{ 
+                                  fontSize: '0.7rem',
+                                  height: 20,
+                                  backgroundColor: selectedSubsection === subsection.id 
+                                    ? 'rgba(0, 172, 193, 0.2)' 
+                                    : 'rgba(0,0,0,0.05)',
+                                  color: selectedSubsection === subsection.id ? '#00acc1' : 'text.secondary'
+                                }}
+                              />
+                            ))}
+                          </Box>
+                        }
+                      />
+                    </ListItemButton>
+                  </ListItem>
+                </React.Fragment>
+              ))}
+            </List>
+          </Paper>
 
-          <Grid container spacing={3}>
-            {topics.map((topic, index) => (
-              <Grid item xs={12} md={4} key={index}>
-                <Card
+          {/* Right Content Area */}
+          <Box sx={{ flexGrow: 1 }}>
+            <Paper 
+              elevation={3} 
+              sx={{ 
+                borderRadius: 2,
+                overflow: 'hidden',
+                boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
+              }}
+            >
+              {/* Tabs */}
+              <Box 
+                sx={{ 
+                  borderBottom: 1, 
+                  borderColor: 'divider',
+                  background: 'linear-gradient(135deg, #00acc1 0%, #00838f 100%)'
+                }}
+              >
+                <Tabs 
+                  value={activeTab} 
+                  onChange={handleTabChange}
                   sx={{
-                    height: '100%',
-                    transition: 'all 0.3s',
-                    '&:hover': {
-                      transform: 'translateY(-4px)',
-                      boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
+                    '& .MuiTab-root': {
+                      color: 'rgba(255,255,255,0.7)',
+                      fontWeight: 600,
+                      fontSize: '1rem',
+                      textTransform: 'none',
+                      minHeight: 64,
+                      transition: 'all 0.3s ease',
+                      '&:hover': {
+                        color: 'white',
+                        backgroundColor: 'rgba(255,255,255,0.1)'
+                      },
+                      '&.Mui-selected': {
+                        color: 'white',
+                        backgroundColor: 'rgba(255,255,255,0.15)'
+                      }
                     },
+                    '& .MuiTabs-indicator': {
+                      backgroundColor: 'white',
+                      height: 3
+                    }
                   }}
                 >
-                  <CardContent>
-                    <Box display="flex" justifyContent="space-between" alignItems="start" mb={2}>
-                      <Typography variant="h6" fontWeight={600}>
-                        {topic.title}
-                      </Typography>
-                      <Chip
-                        label={topic.status}
-                        size="small"
-                        sx={{
-                          background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-                          color: 'white',
-                        }}
-                      />
-                    </Box>
-                    <Typography variant="body2" color="text.secondary">
-                      {topic.description}
-                    </Typography>
-                  </CardContent>
-                </Card>
-              </Grid>
-            ))}
-          </Grid>
-        </Paper>
+                  <Tab label="📖 Theory" />
+                  <Tab label="📝 Problems" />
+                  <Tab label="🔧 Solver" />
+                  <Tab label="💡 Helper" />
+                </Tabs>
+              </Box>
+
+              {/* Tab Content */}
+              <Box sx={{ p: 0, bgcolor: '#fafafa', minHeight: '70vh' }}>
+                {activeTab === 0 && <SemanticTheory subsectionId={selectedSubsection} />}
+                {activeTab === 1 && <SemanticPracticeInteractive topic={subsections.find(s => s.id === selectedSubsection)?.topicKey || 'type-checking'} />}
+                {activeTab === 2 && <SemanticSolverTopicSpecific topic={subsections.find(s => s.id === selectedSubsection)?.topicKey || 'type-checking'} />}
+                {activeTab === 3 && <SemanticHelperIntelligent topic={subsections.find(s => s.id === selectedSubsection)?.topicKey || 'type-checking'} />}
+              </Box>
+            </Paper>
+          </Box>
+        </Box>
       </Container>
     </Box>
   );
