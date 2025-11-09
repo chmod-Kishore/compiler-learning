@@ -89,8 +89,8 @@ public class CompilerController {
     }
 
     @PostMapping("/first-follow/helper")
-    public ResponseEntity<HelpResponse> getFirstFollowHelp(@RequestBody HelpRequest request) {
-        return ResponseEntity.ok(firstFollowHelperService.getHelp(request));
+    public ResponseEntity<FirstFollowHelperResponse> getFirstFollowHelp(@RequestBody FirstFollowRequest request) {
+        return ResponseEntity.ok(firstFollowHelperService.checkAnswer(request));
     }
     
     // LL(1) Parser Endpoints
